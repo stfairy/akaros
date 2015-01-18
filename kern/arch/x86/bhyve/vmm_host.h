@@ -29,10 +29,6 @@
 #ifndef	_VMM_HOST_H_
 #define	_VMM_HOST_H_
 
-#ifndef	_KERNEL
-#error "no user-servicable parts inside"
-#endif
-
 struct xsave_limits {
 	int xsave_enabled;
 	uint64_t xcr0_allowed;

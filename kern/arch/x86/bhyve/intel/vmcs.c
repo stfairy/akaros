@@ -26,21 +26,7 @@
  * $FreeBSD$
  */
 
-#include "opt_ddb.h"
-
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
-
-#include <sys/param.h>
-#include <sys/systm.h>
-#include <sys/pcpu.h>
-
-#include <vm/vm.h>
-#include <vm/pmap.h>
-
-#include <machine/segments.h>
-#include <machine/vmm.h>
-#include "vmm_host.h"
+#include "../vmm_host.h"
 #include "vmx_cpufunc.h"
 #include "vmcs.h"
 #include "ept.h"
@@ -322,7 +308,7 @@ done:
 int vmcs_init(struct vmcs *vmcs)
 {
 	int error, codesel, datasel, tsssel;
-	u_long cr0, cr4, efer;
+	unsigned long cr0, cr4, efer;
 	uint64_t pat, fsbase, idtrbase;
 
 	codesel = vmm_get_host_codesel();
@@ -334,6 +320,8 @@ int vmcs_init(struct vmcs *vmcs)
 	 */
 	VMPTRLD(vmcs);
 
+	// we suspect we don't care about 32-bit guests.
+#if 0
 	/* Initialize guest IA32_PAT MSR with the default value */
 	pat = PAT_VALUE(0, PAT_WRITE_BACK) |
 		PAT_VALUE(1, PAT_WRITE_THROUGH) |
@@ -357,6 +345,7 @@ int vmcs_init(struct vmcs *vmcs)
 	if ((error = vmwrite(VMCS_HOST_IA32_EFER, efer)) != 0)
 		goto done;
 
+#endif
 	/* Load the control registers */
 
 	cr0 = vmm_get_host_cr0();

@@ -164,7 +164,7 @@ static int svm_cleanup(void)
  */
 static int check_svm_features(void)
 {
-	u_int regs[4];
+	unsigned int regs[4];
 
 	/* CPUID Fn8000_000A is for SVM */
 	do_cpuid(0x8000000A, regs);
@@ -1655,7 +1655,8 @@ static __inline void restore_host_tss(void)
 }
 
 static void
-check_asid(struct svm_softc *sc, int vcpuid, pmap_t pmap, u_int thiscpu)
+check_asid(struct svm_softc *sc, int vcpuid, pmap_t pmap,
+	   unsigned int thiscpu)
 {
 	struct svm_vcpu *vcpustate;
 	struct vmcb_ctrl *ctrl;
@@ -1786,7 +1787,7 @@ svm_vmrun(void *arg, int vcpu, register_t rip, pmap_t pmap,
 	struct vlapic *vlapic;
 	struct vm *vm;
 	uint64_t vmcb_pa;
-	u_int thiscpu;
+	unsigned int thiscpu;
 	int handled;
 
 	svm_sc = arg;

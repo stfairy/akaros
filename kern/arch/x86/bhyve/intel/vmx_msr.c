@@ -178,7 +178,7 @@ static uint64_t host_msrs[GUEST_MSR_NUM];
 
 static bool nehalem_cpu(void)
 {
-	u_int family, model;
+	unsigned int family, model;
 
 	/*
 	 * The family:model numbers belonging to the Nehalem microarchitecture
@@ -202,7 +202,7 @@ static bool nehalem_cpu(void)
 
 static bool westmere_cpu(void)
 {
-	u_int family, model;
+	unsigned int family, model;
 
 	/*
 	 * The family:model numbers belonging to the Westmere microarchitecture

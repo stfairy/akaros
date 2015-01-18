@@ -152,7 +152,7 @@ static int vtd_max_domains(struct vtdmap *vtdmap)
 
 static u_int domain_id(void)
 {
-	u_int id;
+	unsigned int id;
 	struct domain *dom;
 
 	/* Skip domain id 0 - it is reserved when Caching Mode field is set */

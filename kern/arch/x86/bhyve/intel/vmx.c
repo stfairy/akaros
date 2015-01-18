@@ -183,7 +183,7 @@ SYSCTL_INT(_hw_vmm_vmx, OID_AUTO, posted_interrupt_vector, CTLFLAG_RD,
 		   &pirvec, 0, "APICv posted interrupt vector");
 
 static struct unrhdr *vpid_unr;
-static u_int vpid_alloc_failed;
+static unsigned int vpid_alloc_failed;
 SYSCTL_UINT(_hw_vmm_vmx, OID_AUTO, vpid_alloc_failed, CTLFLAG_RD,
 			&vpid_alloc_failed, 0, NULL);
 

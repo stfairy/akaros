@@ -62,11 +62,11 @@ SYSCTL_ULONG(_hw_vmm, OID_AUTO, bhyve_xcpuids, CTLFLAG_RW, &bhyve_xcpuids, 0,
 /*
  * The default CPU topology is a single thread per package.
  */
-static u_int threads_per_core = 1;
+static unsigned int threads_per_core = 1;
 SYSCTL_UINT(_hw_vmm_topology, OID_AUTO, threads_per_core, CTLFLAG_RDTUN,
 			&threads_per_core, 0, NULL);
 
-static u_int cores_per_package = 1;
+static unsigned int cores_per_package = 1;
 SYSCTL_UINT(_hw_vmm_topology, OID_AUTO, cores_per_package, CTLFLAG_RDTUN,
 			&cores_per_package, 0, NULL);
 

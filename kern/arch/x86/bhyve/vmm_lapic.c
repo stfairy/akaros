@@ -155,7 +155,7 @@ boolean_t lapic_msr(u_int msr)
 int lapic_rdmsr(struct vm *vm, int cpu, u_int msr, uint64_t * rval, bool * retu)
 {
 	int error;
-	u_int offset;
+	unsigned int offset;
 	struct vlapic *vlapic;
 
 	vlapic = vm_lapic(vm, cpu);
@@ -174,7 +174,7 @@ int lapic_rdmsr(struct vm *vm, int cpu, u_int msr, uint64_t * rval, bool * retu)
 int lapic_wrmsr(struct vm *vm, int cpu, u_int msr, uint64_t val, bool * retu)
 {
 	int error;
-	u_int offset;
+	unsigned int offset;
 	struct vlapic *vlapic;
 
 	vlapic = vm_lapic(vm, cpu);

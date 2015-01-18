@@ -1234,7 +1234,7 @@ vmm_gla2gpa(struct vm *vm, int vcpuid, struct vm_guest_paging *paging,
 			uint64_t gla, int prot, uint64_t * gpa)
 {
 	int nlevels, pfcode, ptpshift, ptpindex, retval, usermode, writable;
-	u_int retries;
+	unsigned int retries;
 	uint64_t *ptpbase, ptpphys, pte, pgsize;
 	uint32_t *ptpbase32, pte32;
 	void *cookie;

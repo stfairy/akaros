@@ -35,3 +35,6 @@ obj-y						+= usb.o
 obj-$(CONFIG_VM)				+= emulate.o
 obj-$(CONFIG_VM)				+= vmx.o
 obj-$(CONFIG_VM)				+= vmx_mmu.o
+
+# bhyve support: rather experimental.
+obj-$(CONFIG_BHYVE)				+= bhyve/
