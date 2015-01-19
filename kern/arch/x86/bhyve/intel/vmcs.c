@@ -26,6 +26,7 @@
  * $FreeBSD$
  */
 
+#include <arch/vmm.h>
 #include "../vmm_host.h"
 #include "vmx_cpufunc.h"
 #include "vmcs.h"
