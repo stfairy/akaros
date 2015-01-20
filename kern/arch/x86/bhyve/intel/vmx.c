@@ -1072,7 +1072,7 @@ static void vmx_set_pcpu_defaults(struct vmx *vmx, int vcpu, pmap_t pmap)
 /*
  * We depend on 'procbased_ctls' to have the Interrupt Window Exiting bit set.
  */
-CTASSERT((PROCBASED_CTLS_ONE_SETTING & PROCBASED_INT_WINDOW_EXITING) != 0);
+static_assert((PROCBASED_CTLS_ONE_SETTING & PROCBASED_INT_WINDOW_EXITING) != 0);
 
 static void __inline vmx_set_int_window_exiting(struct vmx *vmx, int vcpu)
 {
@@ -2036,8 +2036,8 @@ static int vmx_exit_process(struct vmx *vmx, int vcpu, struct vm_exit *vmexit)
 	uint64_t exitintinfo, qual, gpa;
 	bool retu;
 
-	CTASSERT((PINBASED_CTLS_ONE_SETTING & PINBASED_VIRTUAL_NMI) != 0);
-	CTASSERT((PINBASED_CTLS_ONE_SETTING & PINBASED_NMI_EXITING) != 0);
+	static_assert((PINBASED_CTLS_ONE_SETTING & PINBASED_VIRTUAL_NMI) != 0);
+	static_assert((PINBASED_CTLS_ONE_SETTING & PINBASED_NMI_EXITING) != 0);
 
 	handled = UNHANDLED;
 	vmxctx = &vmx->ctx[vcpu];

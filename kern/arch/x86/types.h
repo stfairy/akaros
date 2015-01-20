@@ -47,5 +47,5 @@ typedef uint32_t uintptr_t;
 #define PAGE_MASK 0xFFFFF000
 #endif /* 64bit / 32bit */
 
-
+typedef uint64_t register_t;
 #endif /* !ROS_INC_TYPES_H */

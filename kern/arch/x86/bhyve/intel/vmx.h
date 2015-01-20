@@ -86,7 +86,7 @@ struct vmxstate {
 struct apic_page {
 	uint32_t reg[PAGE_SIZE / 4];
 };
-CTASSERT(sizeof(struct apic_page) == PAGE_SIZE);
+static_assert(sizeof(struct apic_page) == PAGE_SIZE);
 
 /* Posted Interrupt Descriptor (described in section 29.6 of the Intel SDM) */
 struct pir_desc {
@@ -94,7 +94,7 @@ struct pir_desc {
 	uint64_t pending;
 	uint64_t unused[3];
 } __aligned(64);
-CTASSERT(sizeof(struct pir_desc) == 64);
+static_assert(sizeof(struct pir_desc) == 64);
 
 /* Index into the 'guest_msrs[]' array */
 enum {
@@ -120,9 +120,9 @@ struct vmx {
 	struct vm *vm;
 	long eptgen[MAXCPU];		/* cached pmap->pm_eptgen */
 };
-CTASSERT((offsetof(struct vmx, vmcs) & PAGE_MASK) == 0);
-CTASSERT((offsetof(struct vmx, msr_bitmap) & PAGE_MASK) == 0);
-CTASSERT((offsetof(struct vmx, pir_desc[0]) & 63) == 0);
+static_assert((offsetof(struct vmx, vmcs) & PAGE_MASK) == 0);
+static_assert((offsetof(struct vmx, msr_bitmap) & PAGE_MASK) == 0);
+static_assert((offsetof(struct vmx, pir_desc[0]) & 63) == 0);
 
 #define	VMX_GUEST_VMEXIT	0
 #define	VMX_VMRESUME_ERROR	1

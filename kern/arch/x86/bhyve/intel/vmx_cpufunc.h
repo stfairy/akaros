@@ -159,7 +159,7 @@ struct invvpid_desc {
 	uint32_t _res2;
 	uint64_t linear_addr;
 };
-CTASSERT(sizeof(struct invvpid_desc) == 16);
+static_assert(sizeof(struct invvpid_desc) == 16);
 
 static void __inline invvpid(uint64_t type, struct invvpid_desc desc)
 {
@@ -180,7 +180,7 @@ struct invept_desc {
 	uint64_t eptp;
 	uint64_t _res;
 };
-CTASSERT(sizeof(struct invept_desc) == 16);
+static_assert(sizeof(struct invept_desc) == 16);
 
 static void __inline invept(uint64_t type, struct invept_desc desc)
 {

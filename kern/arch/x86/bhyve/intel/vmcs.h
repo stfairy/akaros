@@ -35,7 +35,7 @@ struct vmcs {
 	uint32_t abort_code;
 	char _impl_specific[PAGE_SIZE - sizeof(uint32_t) * 2];
 };
-CTASSERT(sizeof(struct vmcs) == PAGE_SIZE);
+static_assert(sizeof(struct vmcs) == PAGE_SIZE);
 
 /* MSR save region is composed of an array of 'struct msr_entry' */
 struct msr_entry {
@@ -53,7 +53,6 @@ int vmcs_getdesc(struct vmcs *vmcs, int running, int ident,
 				 struct seg_desc *desc);
 int vmcs_setdesc(struct vmcs *vmcs, int running, int ident,
 				 struct seg_desc *desc);
-
 /*
  * Avoid header pollution caused by inline use of 'vtophys()' in vmx_cpufunc.h
  */
