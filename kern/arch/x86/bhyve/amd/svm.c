@@ -115,12 +115,12 @@ SYSCTL_UINT(_hw_vmm_svm, OID_AUTO, num_asids, CTLFLAG_RD, &nasid, 0,
 			"Number of ASIDs supported by this processor");
 
 /* Current ASID generation for each host cpu */
-static struct asid asid[MAXCPU];
+static struct asid asid[MAX_NUM_CPUS];
 
 /* 
  * SVM host state saved area of size 4KB for each core.
  */
-static uint8_t hsave[MAXCPU][PAGE_SIZE] __aligned(PAGE_SIZE);
+static uint8_t hsave[MAX_NUM_CPUS][PAGE_SIZE] __aligned(PAGE_SIZE);
 
 static VMM_STAT_AMD(VCPU_EXITINTINFO, "VM exits during event delivery");
 static VMM_STAT_AMD(VCPU_INTINFO_INJECTED, "Events pending at VM entry");
@@ -234,7 +234,7 @@ static int svm_init(int ipinum)
 
 	vmcb_clean &= VMCB_CACHE_DEFAULT;
 
-	for (cpu = 0; cpu < MAXCPU; cpu++) {
+	for (cpu = 0; cpu < MAX_NUM_CPUS; cpu++) {
 		/*
 		 * Initialize the host ASIDs to their "highest" valid values.
 		 *

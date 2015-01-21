@@ -122,8 +122,8 @@ static MALLOC_DEFINE(M_VLAPIC, "vlapic", "vlapic");
 SYSCTL_DECL(_hw_vmm);
 SYSCTL_NODE(_hw_vmm, OID_AUTO, vmx, CTLFLAG_RW, NULL, NULL);
 
-int vmxon_enabled[MAXCPU];
-static char vmxon_region[MAXCPU][PAGE_SIZE] __aligned(PAGE_SIZE);
+int vmxon_enabled[MAX_NUM_CPUS];
+static char vmxon_region[MAX_NUM_CPUS][PAGE_SIZE] __aligned(PAGE_SIZE);
 
 static uint32_t pinbased_ctls, procbased_ctls, procbased_ctls2;
 static uint32_t exit_ctls, entry_ctls;

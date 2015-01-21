@@ -29,6 +29,11 @@
 #ifndef _VMM_H_
 #define	_VMM_H_
 
+#include <trap.h>
+
+// TODO: put this in Kconfig?
+#define VM_MAX_CPUS MAX_NUM_CPUS
+
 enum vm_suspend_how {
 	VM_SUSPEND_NONE,
 	VM_SUSPEND_RESET,
