@@ -897,7 +897,7 @@ static void restore_guest_fpustate(struct vcpu *vcpu)
 	fpurestore(vcpu->guestfpu);
 
 	/* restore guest XCR0 if XSAVE is enabled in the host */
-	if (rcr4() & CR4_XSAVE)
+	if (rcr4() & X86_CR4_OSXSAVE)
 		load_xcr(0, vcpu->guest_xcr0);
 
 	/*
@@ -914,7 +914,7 @@ static void save_guest_fpustate(struct vcpu *vcpu)
 		panic("fpu emulation not enabled in host!");
 
 	/* save guest XCR0 and restore host XCR0 */
-	if (rcr4() & CR4_XSAVE) {
+	if (rcr4() & X86_CR4_OSXSAVE) {
 		vcpu->guest_xcr0 = rxcr(0);
 		load_xcr(0, vmm_get_host_xcr0());
 	}
@@ -949,9 +949,9 @@ vcpu_set_state_locked(struct vcpu *vcpu, enum vcpu_state newstate,
 	}
 
 	if (vcpu->state == VCPU_RUNNING) {
-		KASSERT(vcpu->hostcpu == curcpu, ("curcpu %d and hostcpu %d "
-										  "mismatch for running vcpu", curcpu,
-										  vcpu->hostcpu));
+		KASSERT(vcpu->hostcpu == hw_core_id(),
+				("hw_core_id() %d and hostcpu %d " "mismatch for running vcpu",
+				 hw_core_id(), vcpu->hostcpu));
 	} else {
 		KASSERT(vcpu->hostcpu == NOCPU, ("Invalid hostcpu %d for a "
 										 "vcpu that is not running",
@@ -1412,7 +1412,8 @@ int vm_run(struct vm *vm, struct vm_run *vmrun)
 restart:
 	critical_enter();
 
-	KASSERT(!CPU_ISSET(curcpu, &pmap->pm_active), ("vm_run: absurd pm_active"));
+	KASSERT(!CPU_ISSET(hw_core_id(), &pmap->pm_active),
+			("vm_run: absurd pm_active"));
 
 	tscval = rdtsc();
 

@@ -507,8 +507,8 @@ static void vmx_enable(void *arg __unused)
 
 	load_cr4(rcr4() | CR4_VMXE);
 
-	*(uint32_t *) vmxon_region[curcpu] = vmx_revision();
-	error = vmxon(vmxon_region[curcpu]);
+	*(uint32_t *) vmxon_region[hw_core_id()] = vmx_revision();
+	error = vmxon(vmxon_region[hw_core_id()]);
 	if (error == 0)
 		vmxon_enabled[hw_core_id()] = 1;
 }
@@ -846,7 +846,7 @@ static void *vmx_vminit(struct vm *vm, pmap_t pmap)
 	 * VM exit and entry respectively. It is also restored from the
 	 * host VMCS area on a VM exit.
 	 *
-	 * MSR_PAT is saved and restored in the guest VMCS are on a VM exit
+	 * MSR_IA32_CR_PAT is saved and restored in the guest VMCS are on a VM exit
 	 * and entry respectively. It is also restored from the host VMCS
 	 * area on a VM exit.
 	 *
@@ -861,7 +861,7 @@ static void *vmx_vminit(struct vm *vm, pmap_t pmap)
 		guest_msr_rw(vmx, MSR_SYSENTER_ESP_MSR) ||
 		guest_msr_rw(vmx, MSR_SYSENTER_EIP_MSR) ||
 		guest_msr_rw(vmx, MSR_EFER) ||
-		guest_msr_rw(vmx, MSR_PAT) || guest_msr_ro(vmx, MSR_TSC))
+		guest_msr_rw(vmx, MSR_IA32_CR_PAT) || guest_msr_ro(vmx, MSR_TSC))
 		panic("vmx_vminit: error setting guest msr access");
 
 	vpid_alloc(vpid, VM_MAXCPU);
@@ -1395,7 +1395,8 @@ static int vmx_emulate_xsetbv(struct vmx *vmx, int vcpu, struct vm_exit *vmexit)
 	}
 
 	/* We only handle xcr0 if both the host and guest have XSAVE enabled. */
-	if (!limits->xsave_enabled || !(vmcs_read(VMCS_GUEST_CR4) & CR4_XSAVE)) {
+	if (!limits->xsave_enabled
+		|| !(vmcs_read(VMCS_GUEST_CR4) & X86_CR4_OSXSAVE)) {
 		vm_inject_ud(vmx->vm, vcpu);
 		return (HANDLED);
 	}

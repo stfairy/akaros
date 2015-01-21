@@ -41,7 +41,7 @@ void vmm_host_state_init(void)
 	int regs[4];
 
 	vmm_host_efer = read_msr(MSR_EFER);
-	vmm_host_pat = read_msr(MSR_PAT);
+	vmm_host_pat = read_msr(MSR_IA32_CR_PAT);
 
 	/*
 	 * We always want CR0.TS to be set when the processor does a VM exit.
@@ -54,6 +54,9 @@ void vmm_host_state_init(void)
 
 	vmm_host_cr4 = rcr4();
 
+	// TODO: figure out which bits these are. I don't see them 
+	printk("NOTE: not doing any XSAVE features for the guest\n");
+#if 0
 	/*
 	 * Only permit a guest to use XSAVE if the host is using
 	 * XSAVE.  Only permit a guest to use XSAVE features supported
@@ -64,7 +67,7 @@ void vmm_host_state_init(void)
 	 * rules for which features depend on other features is known
 	 * to properly emulate xsetbv.
 	 */
-	if (vmm_host_cr4 & CR4_XSAVE) {
+	if (vmm_host_cr4 & X86_CR4_OSXSAVE) {
 		vmm_xsave_limits.xsave_enabled = 1;
 		vmm_host_xcr0 = rxcr(0);
 		vmm_xsave_limits.xcr0_allowed = vmm_host_xcr0 &
@@ -73,6 +76,7 @@ void vmm_host_state_init(void)
 		cpuid_count(0xd, 0x0, regs);
 		vmm_xsave_limits.xsave_max_size = regs[1];
 	}
+#endif
 }
 
 uint64_t vmm_get_host_pat(void)

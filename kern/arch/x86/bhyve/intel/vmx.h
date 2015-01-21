@@ -93,7 +93,7 @@ struct pir_desc {
 	uint64_t pir[4];
 	uint64_t pending;
 	uint64_t unused[3];
-} __attribute__((aligned(64)));
+} __attribute__ ((aligned(64)));
 static_assert(sizeof(struct pir_desc) == 64);
 
 /* Index into the 'guest_msrs[]' array */
@@ -118,7 +118,7 @@ struct vmx {
 	struct vmxstate state[VM_MAXCPU];
 	uint64_t eptp;
 	struct vm *vm;
-	long eptgen[MAXCPU];		/* cached pmap->pm_eptgen */
+	long eptgen[MAX_NUM_CPUS];	/* cached pmap->pm_eptgen */
 };
 static_assert((offsetof(struct vmx, vmcs) & PAGE_MASK) == 0);
 static_assert((offsetof(struct vmx, msr_bitmap) & PAGE_MASK) == 0);

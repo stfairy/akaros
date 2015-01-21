@@ -251,7 +251,7 @@ x86_emulate_cpuid(struct vm *vm, int vcpu_id,
 
 			/*
 			 * If CPUID2_XSAVE is being advertised and the
-			 * guest has set CR4_XSAVE, set
+			 * guest has set X86_CR4_OSXSAVE, set
 			 * CPUID2_OSXSAVE.
 			 */
 			regs[2] &= ~CPUID2_OSXSAVE;
@@ -260,7 +260,7 @@ x86_emulate_cpuid(struct vm *vm, int vcpu_id,
 				if (error)
 					panic("x86_emulate_cpuid: error %d "
 						  "fetching %%cr4", error);
-				if (cr4 & CR4_XSAVE)
+				if (cr4 & X86_CR4_OSXSAVE)
 					regs[2] |= CPUID2_OSXSAVE;
 			}
 

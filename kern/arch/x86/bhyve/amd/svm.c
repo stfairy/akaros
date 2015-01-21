@@ -521,7 +521,7 @@ static void *svm_vminit(struct vm *vm, pmap_t pmap)
 	svm_msr_rw_ok(svm_sc->msr_bitmap, MSR_SYSENTER_CS_MSR);
 	svm_msr_rw_ok(svm_sc->msr_bitmap, MSR_SYSENTER_ESP_MSR);
 	svm_msr_rw_ok(svm_sc->msr_bitmap, MSR_SYSENTER_EIP_MSR);
-	svm_msr_rw_ok(svm_sc->msr_bitmap, MSR_PAT);
+	svm_msr_rw_ok(svm_sc->msr_bitmap, MSR_IA32_CR_PAT);
 
 	svm_msr_rd_ok(svm_sc->msr_bitmap, MSR_TSC);
 
@@ -1655,8 +1655,7 @@ static __inline void restore_host_tss(void)
 }
 
 static void
-check_asid(struct svm_softc *sc, int vcpuid, pmap_t pmap,
-	   unsigned int thiscpu)
+check_asid(struct svm_softc *sc, int vcpuid, pmap_t pmap, unsigned int thiscpu)
 {
 	struct svm_vcpu *vcpustate;
 	struct vmcb_ctrl *ctrl;
@@ -1902,8 +1901,9 @@ svm_vmrun(void *arg, int vcpu, register_t rip, pmap_t pmap,
 		 * when the VMRUN ioctl returns to userspace.
 		 */
 		wrmsr(MSR_GSBASE, (uint64_t) & __pcpu[thiscpu]);
-		KASSERT(curcpu == thiscpu, ("thiscpu/curcpu (%u/%u) mismatch",
-									thiscpu, curcpu));
+		KASSERT(hw_core_id() == thiscpu,
+				("thiscpu/hw_core_id() (%u/%u) mismatch", thiscpu,
+				 hw_core_id()));
 
 		/*
 		 * The host GDTR and IDTR is saved by VMRUN and restored
