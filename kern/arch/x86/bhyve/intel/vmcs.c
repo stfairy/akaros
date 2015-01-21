@@ -169,7 +169,7 @@ vmcs_seg_desc_encoding(int seg, uint32_t * base, uint32_t * lim, uint32_t * acc)
 
 int vmcs_getreg(struct vmcs *vmcs, int running, int ident, uint64_t * retval)
 {
-	uint8_t irq;
+	uint8_t irq = irq_is_enabled();
 	int error;
 	uint32_t encoding;
 
@@ -201,7 +201,7 @@ int vmcs_getreg(struct vmcs *vmcs, int running, int ident, uint64_t * retval)
 
 int vmcs_setreg(struct vmcs *vmcs, int running, int ident, uint64_t val)
 {
-	uint8_t irq;
+	uint8_t irq = irq_is_enabled();
 	int error;
 	uint32_t encoding;
 
@@ -228,7 +228,7 @@ int vmcs_setreg(struct vmcs *vmcs, int running, int ident, uint64_t val)
 
 int vmcs_setdesc(struct vmcs *vmcs, int running, int seg, struct seg_desc *desc)
 {
-	uint8_t irq;
+	uint8_t irq = irq_is_enabled();
 	int error;
 	uint32_t base, limit, access;
 
@@ -256,7 +256,7 @@ done:
 
 int vmcs_getdesc(struct vmcs *vmcs, int running, int seg, struct seg_desc *desc)
 {
-	uint8_t irq;
+	uint8_t irq = irq_is_enabled();
 	int error;
 	uint32_t base, limit, access;
 	uint64_t u64;
@@ -289,7 +289,7 @@ done:
 int vmcs_set_msr_save(struct vmcs *vmcs, unsigned long g_area,
 		      unsigned int g_count)
 {
-	uint8_t irq;
+	uint8_t irq = irq_is_enabled();
 	int error;
 
 	VMPTRLD(&irq, vmcs);
@@ -317,7 +317,7 @@ done:
 
 int vmcs_init(struct vmcs *vmcs)
 {
-	uint8_t irq;
+	uint8_t irq = irq_is_enabled();
 	int error, codesel, datasel, tsssel;
 	unsigned long cr0, cr4, efer;
 	uint64_t pat, fsbase, idtrbase;
