@@ -40,6 +40,7 @@ typedef uintptr_t vm_offset_t;
 #define SYSCTL_NODE(a, b, c, d, e, f)
 #define SYSCTL_ULONG(a, b, c, d, e, f, g)
 #define SYSCTL_INT(a, b, c, d, e, f, g)
+#define SYSCTL_UINT(a, b, c, d, e, f, g)
 
 // TODO: make this work even out of a function.
 #undef static_assert

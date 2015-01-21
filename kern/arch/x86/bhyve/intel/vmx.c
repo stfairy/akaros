@@ -37,14 +37,14 @@
 #include "../vmm_ktr.h"
 #include "../vmm_stat.h"
 #include "../io/vatpic.h"
-#include "../io/vlapic.h"
 #include "../io/vlapic_priv.h"
+#include "../io/vlapic.h"
 
 #include "ept.h"
 #include "vmx_cpufunc.h"
 #include "vmx.h"
 #include "vmx_msr.h"
-#include "x86.h"
+#include "../x86.h"
 #include "vmx_controls.h"
 
 #define	PINBASED_CTLS_ONE_SETTING					\
@@ -94,14 +94,15 @@
 #define	HANDLED		1
 #define	UNHANDLED	0
 
-static MALLOC_DEFINE(M_VMX, "vmx", "vmx");
-static MALLOC_DEFINE(M_VLAPIC, "vlapic", "vlapic");
+// TODO: wtf is this?
+//static MALLOC_DEFINE(M_VMX, "vmx", "vmx");
+//static MALLOC_DEFINE(M_VLAPIC, "vlapic", "vlapic");
 
 SYSCTL_DECL(_hw_vmm);
 SYSCTL_NODE(_hw_vmm, OID_AUTO, vmx, CTLFLAG_RW, NULL, NULL);
 
 int vmxon_enabled[MAX_NUM_CPUS];
-static char vmxon_region[MAX_NUM_CPUS][PAGE_SIZE] __aligned(PAGE_SIZE);
+static char vmxon_region[MAX_NUM_CPUS][PAGE_SIZE] __attribute__ ((aligned(PAGE_SIZE)));
 
 static uint32_t pinbased_ctls, procbased_ctls, procbased_ctls2;
 static uint32_t exit_ctls, entry_ctls;
@@ -125,7 +126,8 @@ SYSCTL_INT(_hw_vmm_vmx, OID_AUTO, initialized, CTLFLAG_RD,
 /*
  * Optional capabilities
  */
-static SYSCTL_NODE(_hw_vmm_vmx, OID_AUTO, cap, CTLFLAG_RW, NULL, NULL);
+// ha ha!
+//static SYSCTL_NODE(_hw_vmm_vmx, OID_AUTO, cap, CTLFLAG_RW, NULL, NULL);
 
 static int cap_halt_exit;
 SYSCTL_INT(_hw_vmm_vmx_cap, OID_AUTO, halt_exit, CTLFLAG_RD, &cap_halt_exit, 0,

@@ -525,4 +525,41 @@
 #define MSR_VM_IGNNE                    0xc0010115
 #define MSR_VM_HSAVE_PA                 0xc0010117
 
+/* BSD special registers we don't seem to have here? TODO: reconcile. */
+/*
+ * X2APIC MSRs
+ */
+#define	MSR_APIC_ID		0x802
+#define	MSR_APIC_VERSION	0x803
+#define	MSR_APIC_TPR		0x808
+#define	MSR_APIC_EOI		0x80b
+#define	MSR_APIC_LDR		0x80d
+#define	MSR_APIC_SVR		0x80f
+#define	MSR_APIC_ISR0		0x810
+#define	MSR_APIC_ISR1		0x811
+#define	MSR_APIC_ISR2		0x812
+#define	MSR_APIC_ISR3		0x813
+#define	MSR_APIC_ISR4		0x814
+#define	MSR_APIC_ISR5		0x815
+#define	MSR_APIC_ISR6		0x816
+#define	MSR_APIC_ISR7		0x817
+#define	MSR_APIC_TMR0		0x818
+#define	MSR_APIC_IRR0		0x820
+#define	MSR_APIC_ESR		0x828
+#define	MSR_APIC_LVT_CMCI	0x82F
+#define	MSR_APIC_ICR		0x830
+#define	MSR_APIC_LVT_TIMER	0x832
+#define	MSR_APIC_LVT_THERMAL	0x833
+#define	MSR_APIC_LVT_PCINT	0x834
+#define	MSR_APIC_LVT_LINT0	0x835
+#define	MSR_APIC_LVT_LINT1	0x836
+#define	MSR_APIC_LVT_ERROR	0x837
+#define	MSR_APIC_ICR_TIMER	0x838
+#define	MSR_APIC_CCR_TIMER	0x839
+#define	MSR_APIC_DCR_TIMER	0x83e
+#define	MSR_APIC_SELF_IPI	0x83f
+
+#define	MSR_IA32_XSS		0xda0
+
+
 #endif /* _ASM_X86_MSR_INDEX_H */

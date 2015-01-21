@@ -29,7 +29,7 @@
 #ifndef _VLAPIC_PRIV_H_
 #define	_VLAPIC_PRIV_H_
 
-#include <x86/apicreg.h>
+//#include <x86/apicreg.h>
 
 /*
  * APIC Register:		Offset	   Description
@@ -134,7 +134,7 @@ enum boot_state {
  */
 #define	ISRVEC_STK_SIZE		(16 + 1)
 
-#define VLAPIC_MAXLVT_INDEX	APIC_LVT_CMCI
+#define VLAPIC_MAXLVT_INDEX	6 /*APIC_LVT_CMCI not defined in akaros? */
 
 struct vlapic;
 
@@ -156,11 +156,13 @@ struct vlapic {
 	uint32_t esr_pending;
 	int esr_firing;
 
-	struct callout callout;		/* vlapic timer */
-	struct bintime timer_fire_bt;	/* callout expiry time */
-	struct bintime timer_freq_bt;	/* timer frequency */
-	struct bintime timer_period_bt;	/* timer period */
-	struct mtx timer_mtx;
+	// TODO: alarm
+	//	struct callout callout;		/* vlapic timer */
+	// TODO: time
+	//struct bintime timer_fire_bt;	/* callout expiry time */
+	//struct bintime timer_freq_bt;	/* timer frequency */
+	//struct bxintime timer_period_bt;	/* timer period */
+	qlock_t timer_mtx;
 
 	/*
 	 * The 'isrvec_stk' is a stack of vectors injected by the local apic.
