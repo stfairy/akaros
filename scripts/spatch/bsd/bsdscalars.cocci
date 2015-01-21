@@ -9,3 +9,4 @@ typedef u_int;
 @@
 -u_int
 +unsigned int
+

@@ -120,7 +120,7 @@ struct vcpu {
 struct mem_seg {
 	vm_paddr_t gpa;
 	size_t len;
-	boolean_t wired;
+	bool wired;
 	vm_object_t object;
 };
 #define	VM_MAX_MEMORY_SEGMENTS	2
@@ -504,7 +504,7 @@ int vm_unmap_mmio(struct vm *vm, vm_paddr_t gpa, size_t len)
 	return (0);
 }
 
-boolean_t vm_mem_allocated(struct vm * vm, vm_paddr_t gpa)
+bool vm_mem_allocated(struct vm * vm, vm_paddr_t gpa)
 {
 	int i;
 	vm_paddr_t gpabase, gpalimit;
@@ -641,7 +641,7 @@ static int vm_gpa_wire(struct vm *vm)
 	return (0);
 }
 
-static void vm_iommu_modify(struct vm *vm, boolean_t map)
+static void vm_iommu_modify(struct vm *vm, bool map)
 {
 	int i, sz;
 	vm_paddr_t gpa, hpa;
@@ -833,7 +833,7 @@ int vm_set_register(struct vm *vm, int vcpu, int reg, uint64_t val)
 	return (VMSETREG(vm->cookie, vcpu, reg, val));
 }
 
-static boolean_t is_descriptor_table(int reg)
+static bool is_descriptor_table(int reg)
 {
 
 	switch (reg) {
@@ -845,7 +845,7 @@ static boolean_t is_descriptor_table(int reg)
 	}
 }
 
-static boolean_t is_segment_register(int reg)
+static bool is_segment_register(int reg)
 {
 
 	switch (reg) {
@@ -1891,7 +1891,7 @@ struct vhpet *vm_hpet(struct vm *vm)
 	return (vm->vhpet);
 }
 
-boolean_t vmm_is_pptdev(int bus, int slot, int func)
+bool vmm_is_pptdev(int bus, int slot, int func)
 {
 	int found, i, n;
 	int b, s, f;

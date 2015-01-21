@@ -297,7 +297,7 @@ int ppt_assigned_devices(struct vm *vm)
 	return (num);
 }
 
-boolean_t ppt_is_mmio(struct vm * vm, vm_paddr_t gpa)
+bool ppt_is_mmio(struct vm * vm, vm_paddr_t gpa)
 {
 	int i, n;
 	struct pptdev *ppt;

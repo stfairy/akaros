@@ -36,7 +36,7 @@ __FBSDID("$FreeBSD$");
 
 #include "vmm_util.h"
 
-boolean_t vmm_is_intel(void)
+bool vmm_is_intel(void)
 {
 
 	if (strcmp(cpu_vendor, "GenuineIntel") == 0)
@@ -45,7 +45,7 @@ boolean_t vmm_is_intel(void)
 		return (FALSE);
 }
 
-boolean_t vmm_is_amd(void)
+bool vmm_is_amd(void)
 {
 	if (strcmp(cpu_vendor, "AuthenticAMD") == 0)
 		return (TRUE);
@@ -53,7 +53,7 @@ boolean_t vmm_is_amd(void)
 		return (FALSE);
 }
 
-boolean_t vmm_supports_1G_pages(void)
+bool vmm_supports_1G_pages(void)
 {
 	unsigned int regs[4];
 

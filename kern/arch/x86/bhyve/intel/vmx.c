@@ -26,41 +26,19 @@
  * $FreeBSD$
  */
 
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
-
-#include <sys/param.h>
-#include <sys/systm.h>
-#include <sys/smp.h>
-#include <sys/kernel.h>
-#include <sys/malloc.h>
-#include <sys/pcpu.h>
-#include <sys/proc.h>
-#include <sys/sysctl.h>
-
-#include <vm/vm.h>
-#include <vm/pmap.h>
-
-#include <machine/psl.h>
-#include <machine/cpufunc.h>
-#include <machine/md_var.h>
-#include <machine/segments.h>
-#include <machine/smp.h>
-#include <machine/specialreg.h>
-#include <machine/vmparam.h>
-
-#include <machine/vmm.h>
-#include <machine/vmm_dev.h>
-#include <machine/vmm_instruction_emul.h>
-#include "vmm_lapic.h"
-#include "vmm_host.h"
-#include "vmm_ioport.h"
-#include "vmm_ipi.h"
-#include "vmm_ktr.h"
-#include "vmm_stat.h"
-#include "vatpic.h"
-#include "vlapic.h"
-#include "vlapic_priv.h"
+#include <arch/vmm.h>
+#include <error.h>
+#include <pmap.h>
+#include <smp.h>
+#include "../vmm_lapic.h"
+#include "../vmm_host.h"
+#include "../vmm_ioport.h"
+#include "../vmm_ipi.h"
+#include "../vmm_ktr.h"
+#include "../vmm_stat.h"
+#include "../vatpic.h"
+#include "../vlapic.h"
+#include "../vlapic_priv.h"
 
 #include "ept.h"
 #include "vmx_cpufunc.h"
@@ -1783,7 +1761,7 @@ static int ept_fault_type(uint64_t ept_qual)
 	return (fault_type);
 }
 
-static boolean_t ept_emulation_fault(uint64_t ept_qual)
+static bool ept_emulation_fault(uint64_t ept_qual)
 {
 	int read, write;
 

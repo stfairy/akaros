@@ -31,7 +31,7 @@
 
 struct vm;
 
-boolean_t lapic_msr(unsigned int num);
+bool lapic_msr(unsigned int num);
 int lapic_rdmsr(struct vm *vm, int cpu, unsigned int msr, uint64_t * rval,
 				bool * retu);
 int lapic_wrmsr(struct vm *vm, int cpu, unsigned int msr, uint64_t wval,

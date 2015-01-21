@@ -42,7 +42,7 @@ __FBSDID("$FreeBSD$");
 #include "vmx.h"
 #include "vmx_msr.h"
 
-static boolean_t vmx_ctl_allows_one_setting(uint64_t msr_val, int bitpos)
+static bool vmx_ctl_allows_one_setting(uint64_t msr_val, int bitpos)
 {
 
 	if (msr_val & (1UL << (bitpos + 32)))
@@ -51,7 +51,7 @@ static boolean_t vmx_ctl_allows_one_setting(uint64_t msr_val, int bitpos)
 		return (FALSE);
 }
 
-static boolean_t vmx_ctl_allows_zero_setting(uint64_t msr_val, int bitpos)
+static bool vmx_ctl_allows_zero_setting(uint64_t msr_val, int bitpos)
 {
 
 	if ((msr_val & (1UL << bitpos)) == 0)
@@ -83,7 +83,7 @@ vmx_set_ctlreg(int ctl_reg, int true_ctl_reg, uint32_t ones_mask,
 {
 	int i;
 	uint64_t val, trueval;
-	boolean_t true_ctls_avail, one_allowed, zero_allowed;
+	bool true_ctls_avail, one_allowed, zero_allowed;
 
 	/* We cannot ask the same bit to be set to both '1' and '0' */
 	if ((ones_mask ^ zeros_mask) != (ones_mask | zeros_mask))

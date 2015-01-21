@@ -35,6 +35,12 @@
 typedef uintptr_t vm_offset_t;
 #define GSEL(s,r) (((s)<<3)|(r))
 
+// TOOD: FIX all the cmd stuff by moving it to ctl. Later.
+#define SYSCTL_DECL(x)
+#define SYSCTL_NODE(a, b, c, d, e, f)
+#define SYSCTL_ULONG(a, b, c, d, e, f, g)
+#define SYSCTL_INT(a, b, c, d, e, f, g)
+
 // TODO: make this work even out of a function.
 #undef static_assert
 #define static_assert(x)
