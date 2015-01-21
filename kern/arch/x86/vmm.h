@@ -31,6 +31,10 @@
 
 #include <trap.h>
 
+// TODO: make this work even out of a function.
+#undef static_assert
+#define static_assert(x)
+
 // TODO: put this in Kconfig?
 #define VM_MAX_CPUS MAX_NUM_CPUS
 
