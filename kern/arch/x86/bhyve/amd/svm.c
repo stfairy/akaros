@@ -144,9 +144,9 @@ static void svm_disable(void *arg __unused)
 {
 	uint64_t efer;
 
-	efer = rdmsr(MSR_EFER);
+	efer = read_msr(MSR_EFER);
 	efer &= ~EFER_SVM;
-	wrmsr(MSR_EFER, efer);
+	write_msr(MSR_EFER, efer);
 }
 
 /*
@@ -192,11 +192,11 @@ static void svm_enable(void *arg __unused)
 {
 	uint64_t efer;
 
-	efer = rdmsr(MSR_EFER);
+	efer = read_msr(MSR_EFER);
 	efer |= EFER_SVM;
-	wrmsr(MSR_EFER, efer);
+	write_msr(MSR_EFER, efer);
 
-	wrmsr(MSR_VM_HSAVE_PA, PADDR(hsave[hw_core_id()]));
+	write_msr(MSR_VM_HSAVE_PA, PADDR(hsave[hw_core_id()]));
 }
 
 /*
@@ -212,7 +212,7 @@ static int svm_available(void)
 		return (0);
 	}
 
-	msr = rdmsr(MSR_VM_CR);
+	msr = read_msr(MSR_VM_CR);
 	if ((msr & VM_CR_SVMDIS) != 0) {
 		printf("SVM: disabled by BIOS.\n");
 		return (0);

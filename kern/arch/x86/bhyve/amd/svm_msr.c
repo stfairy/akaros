@@ -55,10 +55,10 @@ void svm_msr_init(void)
 	 * It is safe to cache the values of the following MSRs because they
 	 * don't change based on hw_core_id(), curproc or curthread.
 	 */
-	host_msrs[IDX_MSR_LSTAR] = rdmsr(MSR_LSTAR);
-	host_msrs[IDX_MSR_CSTAR] = rdmsr(MSR_CSTAR);
-	host_msrs[IDX_MSR_STAR] = rdmsr(MSR_STAR);
-	host_msrs[IDX_MSR_SF_MASK] = rdmsr(MSR_SF_MASK);
+	host_msrs[IDX_MSR_LSTAR] = read_msr(MSR_LSTAR);
+	host_msrs[IDX_MSR_CSTAR] = read_msr(MSR_CSTAR);
+	host_msrs[IDX_MSR_STAR] = read_msr(MSR_STAR);
+	host_msrs[IDX_MSR_SF_MASK] = read_msr(MSR_SF_MASK);
 }
 
 void svm_msr_guest_init(struct svm_softc *sc, int vcpu)
@@ -86,10 +86,10 @@ void svm_msr_guest_exit(struct svm_softc *sc, int vcpu)
 	/*
 	 * Save guest MSRs (if any) and restore host MSRs.
 	 */
-	wrmsr(MSR_LSTAR, host_msrs[IDX_MSR_LSTAR]);
-	wrmsr(MSR_CSTAR, host_msrs[IDX_MSR_CSTAR]);
-	wrmsr(MSR_STAR, host_msrs[IDX_MSR_STAR]);
-	wrmsr(MSR_SF_MASK, host_msrs[IDX_MSR_SF_MASK]);
+	write_msr(MSR_LSTAR, host_msrs[IDX_MSR_LSTAR]);
+	write_msr(MSR_CSTAR, host_msrs[IDX_MSR_CSTAR]);
+	write_msr(MSR_STAR, host_msrs[IDX_MSR_STAR]);
+	write_msr(MSR_SF_MASK, host_msrs[IDX_MSR_SF_MASK]);
 
 	/* MSR_KGSBASE will be restored on the way back to userspace */
 }

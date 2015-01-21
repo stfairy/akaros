@@ -497,7 +497,7 @@ static void vmx_enable(void *arg __unused)
 	int error;
 	uint64_t feature_control;
 
-	feature_control = rdmsr(MSR_IA32_FEATURE_CONTROL);
+	feature_control = read_msr(MSR_IA32_FEATURE_CONTROL);
 	if ((feature_control & IA32_FEATURE_CONTROL_LOCK) == 0 ||
 		(feature_control & IA32_FEATURE_CONTROL_VMX_EN) == 0) {
 		wrmsr(MSR_IA32_FEATURE_CONTROL,
@@ -536,7 +536,7 @@ static int vmx_init(int ipinum)
 	 * Verify that MSR_IA32_FEATURE_CONTROL lock and VMXON enable bits
 	 * are set (bits 0 and 2 respectively).
 	 */
-	feature_control = rdmsr(MSR_IA32_FEATURE_CONTROL);
+	feature_control = read_msr(MSR_IA32_FEATURE_CONTROL);
 	if ((feature_control & IA32_FEATURE_CONTROL_LOCK) == 1 &&
 		(feature_control & IA32_FEATURE_CONTROL_VMX_EN) == 0) {
 		printf("vmx_init: VMX operation disabled by BIOS\n");
@@ -547,7 +547,7 @@ static int vmx_init(int ipinum)
 	 * Verify capabilities MSR_VMX_BASIC:
 	 * - bit 54 indicates support for INS/OUTS decoding
 	 */
-	basic = rdmsr(MSR_VMX_BASIC);
+	basic = read_msr(MSR_VMX_BASIC);
 	if ((basic & (1UL << 54)) == 0) {
 		printf("vmx_init: processor does not support desired basic "
 			   "capabilities\n");
@@ -708,8 +708,8 @@ static int vmx_init(int ipinum)
 	/*
 	 * Stash the cr0 and cr4 bits that must be fixed to 0 or 1
 	 */
-	fixed0 = rdmsr(MSR_VMX_CR0_FIXED0);
-	fixed1 = rdmsr(MSR_VMX_CR0_FIXED1);
+	fixed0 = read_msr(MSR_VMX_CR0_FIXED0);
+	fixed1 = read_msr(MSR_VMX_CR0_FIXED1);
 	cr0_ones_mask = fixed0 & fixed1;
 	cr0_zeros_mask = ~fixed0 & ~fixed1;
 
@@ -725,8 +725,8 @@ static int vmx_init(int ipinum)
 	 */
 	cr0_zeros_mask |= (CR0_NW | CR0_CD);
 
-	fixed0 = rdmsr(MSR_VMX_CR4_FIXED0);
-	fixed1 = rdmsr(MSR_VMX_CR4_FIXED1);
+	fixed0 = read_msr(MSR_VMX_CR4_FIXED0);
+	fixed1 = read_msr(MSR_VMX_CR4_FIXED1);
 	cr4_ones_mask = fixed0 & fixed1;
 	cr4_zeros_mask = ~fixed0 & ~fixed1;
 

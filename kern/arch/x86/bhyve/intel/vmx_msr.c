@@ -63,7 +63,7 @@ static boolean_t vmx_ctl_allows_zero_setting(uint64_t msr_val, int bitpos)
 uint32_t vmx_revision(void)
 {
 
-	return (rdmsr(MSR_VMX_BASIC) & 0xffffffff);
+	return (read_msr(MSR_VMX_BASIC) & 0xffffffff);
 }
 
 /*
@@ -89,12 +89,12 @@ vmx_set_ctlreg(int ctl_reg, int true_ctl_reg, uint32_t ones_mask,
 	if ((ones_mask ^ zeros_mask) != (ones_mask | zeros_mask))
 		return (EINVAL);
 
-	if (rdmsr(MSR_VMX_BASIC) & (1UL << 55))
+	if (read_msr(MSR_VMX_BASIC) & (1UL << 55))
 		true_ctls_avail = TRUE;
 	else
 		true_ctls_avail = FALSE;
 
-	val = rdmsr(ctl_reg);
+	val = read_msr(ctl_reg);
 	if (true_ctls_avail)
 		trueval = rdmsr(true_ctl_reg);	/* step c */
 	else
@@ -231,15 +231,15 @@ void vmx_msr_init(void)
 	 * It is safe to cache the values of the following MSRs because
 	 * they don't change based on hw_core_id(), curproc or curthread.
 	 */
-	host_msrs[IDX_MSR_LSTAR] = rdmsr(MSR_LSTAR);
-	host_msrs[IDX_MSR_CSTAR] = rdmsr(MSR_CSTAR);
-	host_msrs[IDX_MSR_STAR] = rdmsr(MSR_STAR);
-	host_msrs[IDX_MSR_SF_MASK] = rdmsr(MSR_SF_MASK);
+	host_msrs[IDX_MSR_LSTAR] = read_msr(MSR_LSTAR);
+	host_msrs[IDX_MSR_CSTAR] = read_msr(MSR_CSTAR);
+	host_msrs[IDX_MSR_STAR] = read_msr(MSR_STAR);
+	host_msrs[IDX_MSR_SF_MASK] = read_msr(MSR_SF_MASK);
 
 	/*
 	 * Initialize emulated MSRs
 	 */
-	misc_enable = rdmsr(MSR_IA32_MISC_ENABLE);
+	misc_enable = read_msr(MSR_IA32_MISC_ENABLE);
 	/*
 	 * Set mandatory bits
 	 *  11:   branch trace disabled
@@ -311,11 +311,11 @@ void vmx_msr_guest_enter(struct vmx *vmx, int vcpuid)
 	uint64_t *guest_msrs = vmx->guest_msrs[vcpuid];
 
 	/* Save host MSRs (if any) and restore guest MSRs */
-	wrmsr(MSR_LSTAR, guest_msrs[IDX_MSR_LSTAR]);
-	wrmsr(MSR_CSTAR, guest_msrs[IDX_MSR_CSTAR]);
-	wrmsr(MSR_STAR, guest_msrs[IDX_MSR_STAR]);
-	wrmsr(MSR_SF_MASK, guest_msrs[IDX_MSR_SF_MASK]);
-	wrmsr(MSR_KGSBASE, guest_msrs[IDX_MSR_KGSBASE]);
+	write_msr(MSR_LSTAR, guest_msrs[IDX_MSR_LSTAR]);
+	write_msr(MSR_CSTAR, guest_msrs[IDX_MSR_CSTAR]);
+	write_msr(MSR_STAR, guest_msrs[IDX_MSR_STAR]);
+	write_msr(MSR_SF_MASK, guest_msrs[IDX_MSR_SF_MASK]);
+	write_msr(MSR_KGSBASE, guest_msrs[IDX_MSR_KGSBASE]);
 }
 
 void vmx_msr_guest_exit(struct vmx *vmx, int vcpuid)
@@ -323,17 +323,17 @@ void vmx_msr_guest_exit(struct vmx *vmx, int vcpuid)
 	uint64_t *guest_msrs = vmx->guest_msrs[vcpuid];
 
 	/* Save guest MSRs */
-	guest_msrs[IDX_MSR_LSTAR] = rdmsr(MSR_LSTAR);
-	guest_msrs[IDX_MSR_CSTAR] = rdmsr(MSR_CSTAR);
-	guest_msrs[IDX_MSR_STAR] = rdmsr(MSR_STAR);
-	guest_msrs[IDX_MSR_SF_MASK] = rdmsr(MSR_SF_MASK);
-	guest_msrs[IDX_MSR_KGSBASE] = rdmsr(MSR_KGSBASE);
+	guest_msrs[IDX_MSR_LSTAR] = read_msr(MSR_LSTAR);
+	guest_msrs[IDX_MSR_CSTAR] = read_msr(MSR_CSTAR);
+	guest_msrs[IDX_MSR_STAR] = read_msr(MSR_STAR);
+	guest_msrs[IDX_MSR_SF_MASK] = read_msr(MSR_SF_MASK);
+	guest_msrs[IDX_MSR_KGSBASE] = read_msr(MSR_KGSBASE);
 
 	/* Restore host MSRs */
-	wrmsr(MSR_LSTAR, host_msrs[IDX_MSR_LSTAR]);
-	wrmsr(MSR_CSTAR, host_msrs[IDX_MSR_CSTAR]);
-	wrmsr(MSR_STAR, host_msrs[IDX_MSR_STAR]);
-	wrmsr(MSR_SF_MASK, host_msrs[IDX_MSR_SF_MASK]);
+	write_msr(MSR_LSTAR, host_msrs[IDX_MSR_LSTAR]);
+	write_msr(MSR_CSTAR, host_msrs[IDX_MSR_CSTAR]);
+	write_msr(MSR_STAR, host_msrs[IDX_MSR_STAR]);
+	write_msr(MSR_SF_MASK, host_msrs[IDX_MSR_SF_MASK]);
 
 	/* MSR_KGSBASE will be restored on the way back to userspace */
 }

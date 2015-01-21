@@ -63,7 +63,11 @@ static __inline uint64_t vmcs_read(uint32_t encoding)
 	uint64_t val;
 
 	error = vmread(encoding, &val);
-	static_assert(error == 0, ("vmcs_read(%u) error %d", encoding, error));
+	// well, huh, what do we do?
+	if (error) {
+		printk("vmcs_read(%u) error %d", encoding, error);
+		assert(0);
+	}
 	return (val);
 }
 

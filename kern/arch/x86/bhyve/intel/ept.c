@@ -80,7 +80,7 @@ int ept_init(int ipinum)
 	int use_hw_ad_bits, use_superpages, use_exec_only;
 	uint64_t cap;
 
-	cap = rdmsr(MSR_VMX_EPT_VPID_CAP);
+	cap = read_msr(MSR_VMX_EPT_VPID_CAP);
 
 	/*
 	 * Verify that:

@@ -26,16 +26,10 @@
  * $FreeBSD$
  */
 
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
-
-#include <sys/param.h>
-#include <sys/pcpu.h>
-
-#include <machine/cpufunc.h>
-#include <machine/segments.h>
-#include <machine/specialreg.h>
-
+#include <arch/vmm.h>
+#include <error.h>
+#include <pmap.h>
+#include <smp.h>
 #include "vmm_host.h"
 
 static uint64_t vmm_host_efer, vmm_host_pat, vmm_host_cr0, vmm_host_cr4,
@@ -46,8 +40,8 @@ void vmm_host_state_init(void)
 {
 	int regs[4];
 
-	vmm_host_efer = rdmsr(MSR_EFER);
-	vmm_host_pat = rdmsr(MSR_PAT);
+	vmm_host_efer = read_msr(MSR_EFER);
+	vmm_host_pat = read_msr(MSR_PAT);
 
 	/*
 	 * We always want CR0.TS to be set when the processor does a VM exit.
