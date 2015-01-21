@@ -36,9 +36,9 @@
 #include "../vmm_ipi.h"
 #include "../vmm_ktr.h"
 #include "../vmm_stat.h"
-#include "../vatpic.h"
-#include "../vlapic.h"
-#include "../vlapic_priv.h"
+#include "../io/vatpic.h"
+#include "../io/vlapic.h"
+#include "../io/vlapic_priv.h"
 
 #include "ept.h"
 #include "vmx_cpufunc.h"

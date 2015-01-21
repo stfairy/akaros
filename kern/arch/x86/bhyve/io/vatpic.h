@@ -29,7 +29,8 @@
 #ifndef _VATPIC_H_
 #define	_VATPIC_H_
 
-#include <isa/isareg.h>
+// TODO: what file?
+//#include <isa/isareg.h>
 
 #define	ICU_IMR_OFFSET	1
 

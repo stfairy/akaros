@@ -29,9 +29,7 @@
 #ifndef _VMM_KTR_H_
 #define	_VMM_KTR_H_
 
-#include <sys/ktr.h>
-#include <sys/pcpu.h>
-
+//TODO: fix for akaros tracing.
 #ifndef KTR_VMM
 #define	KTR_VMM	KTR_GEN
 #endif
