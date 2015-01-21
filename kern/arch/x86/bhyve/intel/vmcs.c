@@ -27,6 +27,8 @@
  */
 
 #include <arch/vmm.h>
+#include <error.h>
+#include <paddr.h>
 #include "../vmm_host.h"
 #include "vmx_cpufunc.h"
 #include "vmcs.h"
