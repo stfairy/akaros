@@ -604,25 +604,25 @@ void vm_inject_fault(void *vm, int vcpuid, int vector, int errcode_valid,
 static __inline void
 vm_inject_ud(void *vm, int vcpuid)
 {
-	vm_inject_fault(vm, vcpuid, IDT_UD, 0, 0);
+	vm_inject_fault(vm, vcpuid, T_ILLOP, 0, 0);
 }
 
 static __inline void
 vm_inject_gp(void *vm, int vcpuid)
 {
-	vm_inject_fault(vm, vcpuid, IDT_GP, 1, 0);
+	vm_inject_fault(vm, vcpuid, T_GPFLT, 1, 0);
 }
 
 static __inline void
 vm_inject_ac(void *vm, int vcpuid, int errcode)
 {
-	vm_inject_fault(vm, vcpuid, IDT_AC, 1, errcode);
+	vm_inject_fault(vm, vcpuid, T_ALIGN, 1, errcode);
 }
 
 static __inline void
 vm_inject_ss(void *vm, int vcpuid, int errcode)
 {
-	vm_inject_fault(vm, vcpuid, IDT_SS, 1, errcode);
+	vm_inject_fault(vm, vcpuid, T_STACK, 1, errcode);
 }
 
 void vm_inject_pf(void *vm, int vcpuid, int error_code, uint64_t cr2);
