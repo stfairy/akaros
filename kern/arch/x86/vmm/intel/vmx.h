@@ -91,7 +91,8 @@ struct pir_desc {
 	atomic_t pir[4];
 	atomic_t pending;
 	uint64_t unused[3];
-} __attribute__ ((aligned(64)));
+} __attribute__((aligned(64)));
+static_assert(sizeof(struct pir_desc) == 64);
 
 /* Index into the 'guest_msrs[]' array */
 enum {

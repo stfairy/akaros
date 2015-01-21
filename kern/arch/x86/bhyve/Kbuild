@@ -1,5 +1,0 @@
-obj-y						+= vmm.o
-obj-y						+= vmm_host.o
-obj-y						+= vmm_lapic.o
-#obj-y						+= vmm_ipi.o
-obj-y						+= intel/

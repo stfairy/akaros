@@ -1,7 +1,0 @@
-obj-y						+= ept.o
-obj-y						+= vmcs.o
-obj-y						+= vmx.o
-obj-y						+= vmx_msr.o
-
-# we won't do vtd for a while; it requires acpi and ptp, we're not ready.
-#obj-y						+= vtd.o
