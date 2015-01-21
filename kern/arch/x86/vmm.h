@@ -31,6 +31,9 @@
 
 #include <trap.h>
 
+// For Akaros for now
+typedef uintptr_t vm_offset_t;
+
 // TODO: make this work even out of a function.
 #undef static_assert
 #define static_assert(x)

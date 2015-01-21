@@ -54,23 +54,21 @@ const struct xsave_limits *vmm_get_xsave_limits(void);
  */
 static __inline uint64_t vmm_get_host_trbase(void)
 {
-
-	return ((uint64_t) PCPU_GET(tssp));
+	struct per_cpu_info *pcpui = &per_cpu_info[core_id()];
+	return ((uint64_t)pcpui->tss);
 }
 
 static __inline uint64_t vmm_get_host_gdtrbase(void)
 {
-
-	return ((uint64_t) & gdt[NGDT * curcpu]);
+	struct per_cpu_info *pcpui = &per_cpu_info[core_id()];
+	return ((uint64_t)&pcpui->host_gdt);
 }
 
-struct pcpu;
-extern struct pcpu __pcpu[];
-
-static __inline uint64_t vmm_get_host_gsbase(void)
+static __inline uint64_t
+vmm_get_host_gsbase(void)
 {
-
-	return ((uint64_t) & __pcpu[curcpu]);
+	struct per_cpu_info *pcpui = &per_cpu_info[core_id()];
+	return ((uint64_t)pcpui);
 }
 
 #endif

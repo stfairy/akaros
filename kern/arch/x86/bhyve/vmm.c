@@ -983,7 +983,7 @@ vcpu_set_state_locked(struct vcpu *vcpu, enum vcpu_state newstate,
 
 	vcpu->state = newstate;
 	if (newstate == VCPU_RUNNING)
-		vcpu->hostcpu = curcpu;
+		vcpu->hostcpu = hw_core_id();
 	else
 		vcpu->hostcpu = NOCPU;
 
@@ -2050,7 +2050,7 @@ void vcpu_notify_event(struct vm *vm, int vcpuid, bool lapic_intr)
 	hostcpu = vcpu->hostcpu;
 	if (vcpu->state == VCPU_RUNNING) {
 		KASSERT(hostcpu != NOCPU, ("vcpu running on invalid hostcpu"));
-		if (hostcpu != curcpu) {
+		if (hostcpu != hw_core_id()) {
 			if (lapic_intr) {
 				vlapic_post_intr(vcpu->vlapic, hostcpu, vmm_ipinum);
 			} else {
@@ -2058,7 +2058,7 @@ void vcpu_notify_event(struct vm *vm, int vcpuid, bool lapic_intr)
 			}
 		} else {
 			/*
-			 * If the 'vcpu' is running on 'curcpu' then it must
+			 * If the 'vcpu' is running on 'hw_core_id()' then it must
 			 * be sending a notification to itself (e.g. SELF_IPI).
 			 * The pending event will be picked up when the vcpu
 			 * transitions back to guest context.

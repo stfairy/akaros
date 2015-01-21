@@ -28,7 +28,8 @@
 
 #include <arch/vmm.h>
 #include <error.h>
-#include <paddr.h>
+#include <pmap.h>
+#include <smp.h>
 #include "../vmm_host.h"
 #include "vmx_cpufunc.h"
 #include "vmcs.h"
@@ -415,7 +416,7 @@ DB_SHOW_COMMAND(vmcs, db_show_vmcs)
 	uint64_t cur_vmcs, val;
 	uint32_t exit;
 
-	if (!vmxon_enabled[curcpu]) {
+	if (!vmxon_enabled[hw_core_id()]) {
 		db_printf("VMX not enabled\n");
 		return;
 	}

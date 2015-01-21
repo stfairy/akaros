@@ -229,7 +229,7 @@ void vmx_msr_init(void)
 
 	/*
 	 * It is safe to cache the values of the following MSRs because
-	 * they don't change based on curcpu, curproc or curthread.
+	 * they don't change based on hw_core_id(), curproc or curthread.
 	 */
 	host_msrs[IDX_MSR_LSTAR] = rdmsr(MSR_LSTAR);
 	host_msrs[IDX_MSR_CSTAR] = rdmsr(MSR_CSTAR);

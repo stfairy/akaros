@@ -196,7 +196,7 @@ static void svm_enable(void *arg __unused)
 	efer |= EFER_SVM;
 	wrmsr(MSR_EFER, efer);
 
-	wrmsr(MSR_VM_HSAVE_PA, vtophys(hsave[curcpu]));
+	wrmsr(MSR_VM_HSAVE_PA, PADDR(hsave[hw_core_id()]));
 }
 
 /*
@@ -533,14 +533,14 @@ static void *svm_vminit(struct vm *vm, pmap_t pmap)
 	/* Intercept access to all I/O ports. */
 	memset(svm_sc->iopm_bitmap, 0xFF, sizeof(svm_sc->iopm_bitmap));
 
-	iopm_pa = vtophys(svm_sc->iopm_bitmap);
-	msrpm_pa = vtophys(svm_sc->msr_bitmap);
+	iopm_pa = PADDR(svm_sc->iopm_bitmap);
+	msrpm_pa = PADDR(svm_sc->msr_bitmap);
 	pml4_pa = svm_sc->nptp;
 	for (i = 0; i < VM_MAXCPU; i++) {
 		vcpu = svm_get_vcpu(svm_sc, i);
 		vcpu->nextrip = ~0;
 		vcpu->lastcpu = NOCPU;
-		vcpu->vmcb_pa = vtophys(&vcpu->vmcb);
+		vcpu->vmcb_pa = PADDR(&vcpu->vmcb);
 		vmcb_init(svm_sc, i, iopm_pa, msrpm_pa, pml4_pa);
 		svm_msr_guest_init(svm_sc, i);
 	}
@@ -1492,7 +1492,7 @@ svm_inj_interrupts(struct svm_softc *sc, int vcpu, struct vlapic *vlapic)
 			 * Although not explicitly specified in APMv2 the
 			 * relative priorities were verified empirically.
 			 */
-			ipi_cpu(curcpu, IPI_AST);	/* XXX vmm_ipinum? */
+			ipi_cpu(hw_core_id(), IPI_AST);	/* XXX vmm_ipinum? */
 		} else {
 			vm_nmi_clear(sc->vm, vcpu);
 
@@ -1800,13 +1800,13 @@ svm_vmrun(void *arg, int vcpu, register_t rip, pmap_t pmap,
 	vlapic = vm_lapic(vm, vcpu);
 
 	/*
-	 * Stash 'curcpu' on the stack as 'thiscpu'.
+	 * Stash 'hw_core_id()' on the stack as 'thiscpu'.
 	 *
 	 * The per-cpu data area is not accessible until MSR_GSBASE is restored
 	 * after the #VMEXIT. Since VMRUN is executed inside a critical section
-	 * 'curcpu' and 'thiscpu' are guaranteed to identical.
+	 * 'hw_core_id()' and 'thiscpu' are guaranteed to identical.
 	 */
-	thiscpu = curcpu;
+	thiscpu = hw_core_id();
 
 	gctx = svm_get_guest_regctx(svm_sc, vcpu);
 	vmcb_pa = svm_sc->vcpu[vcpu].vmcb_pa;

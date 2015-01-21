@@ -461,7 +461,7 @@ static void vmx_disable(void *arg __unused)
 	struct invvpid_desc invvpid_desc = { 0 };
 	struct invept_desc invept_desc = { 0 };
 
-	if (vmxon_enabled[curcpu]) {
+	if (vmxon_enabled[hw_core_id()]) {
 		/*
 		 * See sections 25.3.3.3 and 25.3.3.4 in Intel Vol 3b.
 		 *
@@ -510,14 +510,14 @@ static void vmx_enable(void *arg __unused)
 	*(uint32_t *) vmxon_region[curcpu] = vmx_revision();
 	error = vmxon(vmxon_region[curcpu]);
 	if (error == 0)
-		vmxon_enabled[curcpu] = 1;
+		vmxon_enabled[hw_core_id()] = 1;
 }
 
 static void vmx_restore(void)
 {
 
-	if (vmxon_enabled[curcpu])
-		vmxon(vmxon_region[curcpu]);
+	if (vmxon_enabled[hw_core_id()])
+		vmxon(vmxon_region[hw_core_id()]);
 }
 
 static int vmx_init(int ipinum)
@@ -895,7 +895,7 @@ static void *vmx_vminit(struct vm *vm, pmap_t pmap)
 		error += vmwrite(VMCS_SEC_PROC_BASED_CTLS, procbased_ctls2);
 		error += vmwrite(VMCS_EXIT_CTLS, exit_ctls);
 		error += vmwrite(VMCS_ENTRY_CTLS, entry_ctls);
-		error += vmwrite(VMCS_MSR_BITMAP, vtophys(vmx->msr_bitmap));
+		error += vmwrite(VMCS_MSR_BITMAP, PADDR(vmx->msr_bitmap));
 		error += vmwrite(VMCS_VPID, vpid[i]);
 
 		/* exception bitmap */
@@ -1024,7 +1024,7 @@ vmx_invvpid(struct vmx *vmx, int vcpu, pmap_t pmap, int running)
 	 * We do this because this vcpu was executing on a different host
 	 * cpu when it last ran. We do not track whether it invalidated
 	 * mappings associated with its 'vpid' during that run. So we must
-	 * assume that the mappings associated with 'vpid' on 'curcpu' are
+	 * assume that the mappings associated with 'vpid' on 'hw_core_id()' are
 	 * stale and invalidate them.
 	 *
 	 * Note that we incur this penalty only when the scheduler chooses to
@@ -1033,7 +1033,7 @@ vmx_invvpid(struct vmx *vmx, int vcpu, pmap_t pmap, int running)
 	 * Note also that this will invalidate mappings tagged with 'vpid'
 	 * for "all" EP4TAs.
 	 */
-	if (pmap->pm_eptgen == vmx->eptgen[curcpu]) {
+	if (pmap->pm_eptgen == vmx->eptgen[hw_core_id()]) {
 		invvpid_desc._res1 = 0;
 		invvpid_desc._res2 = 0;
 		invvpid_desc.vpid = vmxstate->vpid;
@@ -1056,10 +1056,10 @@ static void vmx_set_pcpu_defaults(struct vmx *vmx, int vcpu, pmap_t pmap)
 	struct vmxstate *vmxstate;
 
 	vmxstate = &vmx->state[vcpu];
-	if (vmxstate->lastcpu == curcpu)
+	if (vmxstate->lastcpu == hw_core_id())
 		return;
 
-	vmxstate->lastcpu = curcpu;
+	vmxstate->lastcpu = hw_core_id();
 
 	vmm_stat_incr(vmx->vm, vcpu, VCPU_MIGRATIONS, 1);
 
@@ -2789,7 +2789,7 @@ static int vmx_getreg(void *arg, int vcpu, int reg, uint64_t * retval)
 	struct vmx *vmx = arg;
 
 	running = vcpu_is_running(vmx->vm, vcpu, &hostcpu);
-	if (running && hostcpu != curcpu)
+	if (running && hostcpu != hw_core_id())
 		panic("vmx_getreg: %s%d is running", vm_name(vmx->vm), vcpu);
 
 	if (reg == VM_REG_GUEST_INTR_SHADOW)
@@ -2809,7 +2809,7 @@ static int vmx_setreg(void *arg, int vcpu, int reg, uint64_t val)
 	struct vmx *vmx = arg;
 
 	running = vcpu_is_running(vmx->vm, vcpu, &hostcpu);
-	if (running && hostcpu != curcpu)
+	if (running && hostcpu != hw_core_id())
 		panic("vmx_setreg: %s%d is running", vm_name(vmx->vm), vcpu);
 
 	if (reg == VM_REG_GUEST_INTR_SHADOW)
@@ -2869,7 +2869,7 @@ static int vmx_getdesc(void *arg, int vcpu, int reg, struct seg_desc *desc)
 	struct vmx *vmx = arg;
 
 	running = vcpu_is_running(vmx->vm, vcpu, &hostcpu);
-	if (running && hostcpu != curcpu)
+	if (running && hostcpu != hw_core_id())
 		panic("vmx_getdesc: %s%d is running", vm_name(vmx->vm), vcpu);
 
 	return (vmcs_getdesc(&vmx->vmcs[vcpu], running, reg, desc));
@@ -2881,7 +2881,7 @@ static int vmx_setdesc(void *arg, int vcpu, int reg, struct seg_desc *desc)
 	struct vmx *vmx = arg;
 
 	running = vcpu_is_running(vmx->vm, vcpu, &hostcpu);
-	if (running && hostcpu != curcpu)
+	if (running && hostcpu != hw_core_id())
 		panic("vmx_setdesc: %s%d is running", vm_name(vmx->vm), vcpu);
 
 	return (vmcs_setdesc(&vmx->vmcs[vcpu], running, reg, desc));

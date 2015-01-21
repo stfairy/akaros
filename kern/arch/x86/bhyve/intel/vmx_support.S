@@ -116,14 +116,14 @@ ENTRY(vmx_enter_guest)
 	LK btsl	%eax, PM_ACTIVE(%r11)
 
 	/*
-	 * If 'vmx->eptgen[curcpu]' is not identical to 'pmap->pm_eptgen'
+	 * If 'vmx->eptgen[hw_core_id()]' is not identical to 'pmap->pm_eptgen'
 	 * then we must invalidate all mappings associated with this EPTP.
 	 */
 	movq	PM_EPTGEN(%r11), %r10
 	cmpq	%r10, VMX_EPTGEN(%rsi, %rax, 8)
 	je	guest_restore
 
-	/* Refresh 'vmx->eptgen[curcpu]' */
+	/* Refresh 'vmx->eptgen[hw_core_id()]' */
 	movq	%r10, VMX_EPTGEN(%rsi, %rax, 8)
 
 	/* Setup the invept descriptor on the host stack */

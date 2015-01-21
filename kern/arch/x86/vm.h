@@ -3,7 +3,6 @@
 #include <page_alloc.h>
 #include <sys/queue.h>
 #include <pmap.h>
-#include "vmx.h"
 
 #define CR0_PE_MASK (1ULL << 0)
 #define CR0_TS_MASK (1ULL << 3)

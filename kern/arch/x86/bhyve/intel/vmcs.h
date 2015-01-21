@@ -29,7 +29,7 @@
 #ifndef _VMCS_H_
 #define	_VMCS_H_
 
-#ifdef _KERNEL
+#ifdef ROS_KERNEL
 struct vmcs {
 	uint32_t identifier;
 	uint32_t abort_code;
@@ -63,7 +63,7 @@ static __inline uint64_t vmcs_read(uint32_t encoding)
 	uint64_t val;
 
 	error = vmread(encoding, &val);
-	KASSERT(error == 0, ("vmcs_read(%u) error %d", encoding, error));
+	static_assert(error == 0, ("vmcs_read(%u) error %d", encoding, error));
 	return (val);
 }
 

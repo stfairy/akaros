@@ -299,7 +299,7 @@ skip_dmar:
 	 * Set up the root-table to point to the context-entry tables
 	 */
 	for (i = 0; i < 256; i++) {
-		ctx_paddr = vtophys(ctx_tables[i]);
+		ctx_paddr = PADDR(ctx_tables[i]);
 		if (ctx_paddr & PAGE_MASK)
 			panic("ctx table (0x%0lx) not page aligned", ctx_paddr);
 
@@ -323,7 +323,7 @@ static void vtd_enable(void)
 		vtd_wbflush(vtdmap);
 
 		/* Update the root table address */
-		vtdmap->rta = vtophys(root_table);
+		vtdmap->rta = PADDR(root_table);
 		vtdmap->gcr = VTD_GCR_SRTP;
 		while ((vtdmap->gsr & VTD_GSR_RTPS) == 0) ;
 
@@ -357,7 +357,7 @@ static void vtd_add_device(void *arg, uint16_t rid)
 	vtdmap = vtdmaps[0];
 	bus = PCI_RID2BUS(rid);
 	ctxp = ctx_tables[bus];
-	pt_paddr = vtophys(dom->ptp);
+	pt_paddr = PADDR(dom->ptp);
 	idx = VTD_RID2IDX(rid);
 
 	if (ctxp[idx] & VTD_CTX_PRESENT) {
