@@ -55,6 +55,7 @@ int vmcs_setdesc(struct vmcs *vmcs, int running, int ident,
 				 struct seg_desc *desc);
 /*
  * Avoid header pollution caused by inline use of 'vtophys()' in vmx_cpufunc.h
+ * TODO: see if this bsd comment still applies.
  */
 #ifdef _VMX_CPUFUNC_H_
 static __inline uint64_t vmcs_read(uint32_t encoding)

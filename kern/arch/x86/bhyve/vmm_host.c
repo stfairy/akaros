@@ -30,6 +30,7 @@
 #include <error.h>
 #include <pmap.h>
 #include <smp.h>
+#include <trap.h>
 #include "vmm_host.h"
 
 static uint64_t vmm_host_efer, vmm_host_pat, vmm_host_cr0, vmm_host_cr4,
@@ -112,20 +113,20 @@ uint64_t vmm_get_host_xcr0(void)
 uint64_t vmm_get_host_datasel(void)
 {
 
-	return (GSEL(GDATA_SEL, SEL_KPL));
+	return GD_KD;
 
 }
 
 uint64_t vmm_get_host_codesel(void)
 {
 
-	return (GSEL(GCODE_SEL, SEL_KPL));
+	return GD_KT;
 }
 
 uint64_t vmm_get_host_tsssel(void)
 {
 
-	return (GSEL(GPROC0_SEL, SEL_KPL));
+	return GD_TSS;
 }
 
 uint64_t vmm_get_host_fsbase(void)
@@ -137,7 +138,7 @@ uint64_t vmm_get_host_fsbase(void)
 uint64_t vmm_get_host_idtrbase(void)
 {
 
-	return (r_idt.rd_base);
+	return (uint64_t) idt;
 }
 
 const struct xsave_limits *vmm_get_xsave_limits(void)

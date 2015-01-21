@@ -33,6 +33,7 @@
 
 // For Akaros for now
 typedef uintptr_t vm_offset_t;
+#define GSEL(s,r) (((s)<<3)|(r))
 
 // TODO: make this work even out of a function.
 #undef static_assert

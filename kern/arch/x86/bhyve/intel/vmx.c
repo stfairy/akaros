@@ -500,7 +500,7 @@ static void vmx_enable(void *arg __unused)
 	feature_control = read_msr(MSR_IA32_FEATURE_CONTROL);
 	if ((feature_control & IA32_FEATURE_CONTROL_LOCK) == 0 ||
 		(feature_control & IA32_FEATURE_CONTROL_VMX_EN) == 0) {
-		wrmsr(MSR_IA32_FEATURE_CONTROL,
+		write_msr(MSR_IA32_FEATURE_CONTROL,
 			  feature_control | IA32_FEATURE_CONTROL_VMX_EN |
 			  IA32_FEATURE_CONTROL_LOCK);
 	}
@@ -817,7 +817,7 @@ static void *vmx_vminit(struct vm *vm, pmap_t pmap)
 	}
 	vmx->vm = vm;
 
-	vmx->eptp = eptp(vtophys((vm_offset_t) pmap->pm_pml4));
+	vmx->eptp = eptp(PADDR((vm_offset_t) pmap->pm_pml4));
 
 	/*
 	 * Clean up EPTP-tagged guest physical and combined mappings
@@ -907,7 +907,8 @@ static void *vmx_vminit(struct vm *vm, pmap_t pmap)
 
 		if (virtual_interrupt_delivery) {
 			error += vmwrite(VMCS_APIC_ACCESS, APIC_ACCESS_ADDRESS);
-			error += vmwrite(VMCS_VIRTUAL_APIC, vtophys(&vmx->apic_page[i]));
+			error += vmwrite(VMCS_VIRTUAL_APIC,
+					 PADDR(&vmx->apic_page[i]));
 			error += vmwrite(VMCS_EOI_EXIT0, 0);
 			error += vmwrite(VMCS_EOI_EXIT1, 0);
 			error += vmwrite(VMCS_EOI_EXIT2, 0);
@@ -915,7 +916,8 @@ static void *vmx_vminit(struct vm *vm, pmap_t pmap)
 		}
 		if (posted_interrupts) {
 			error += vmwrite(VMCS_PIR_VECTOR, pirvec);
-			error += vmwrite(VMCS_PIR_DESC, vtophys(&vmx->pir_desc[i]));
+			error += vmwrite(VMCS_PIR_DESC,
+					 PADDR(&vmx->pir_desc[i]));
 		}
 		VMCLEAR(vmcs);
 		KASSERT(error == 0, ("vmx_vminit: error customizing the vmcs"));

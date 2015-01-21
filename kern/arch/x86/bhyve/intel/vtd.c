@@ -482,7 +482,7 @@ vtd_update_mapping(void *arg, vm_paddr_t gpa, vm_paddr_t hpa, uint64_t len,
 		 */
 		if (ptp[ptpindex] == 0) {
 			void *nlp = malloc(PAGE_SIZE, M_VTD, M_WAITOK | M_ZERO);
-			ptp[ptpindex] = vtophys(nlp) | VTD_PTE_RD | VTD_PTE_WR;
+			ptp[ptpindex] = PADDR(nlp) | VTD_PTE_RD | VTD_PTE_WR;
 		}
 
 		ptp = (uint64_t *) PHYS_TO_DMAP(ptp[ptpindex] & VTD_PTE_ADDR_M);

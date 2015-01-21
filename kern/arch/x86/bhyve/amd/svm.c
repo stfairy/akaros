@@ -498,7 +498,7 @@ static void *svm_vminit(struct vm *vm, pmap_t pmap)
 
 	svm_sc = malloc(sizeof(struct svm_softc), M_SVM, M_WAITOK | M_ZERO);
 	svm_sc->vm = vm;
-	svm_sc->nptp = (vm_offset_t) vtophys(pmap->pm_pml4);
+	svm_sc->nptp = (vm_offset_t) PADDR(pmap->pm_pml4);
 
 	/*
 	 * Intercept read and write accesses to all MSRs.
@@ -1900,7 +1900,7 @@ svm_vmrun(void *arg, int vcpu, register_t rip, pmap_t pmap,
 		 * since it is not used in the kernel and will be restored
 		 * when the VMRUN ioctl returns to userspace.
 		 */
-		wrmsr(MSR_GSBASE, (uint64_t) & __pcpu[thiscpu]);
+		write_msr(MSR_GSBASE, (uint64_t) & __pcpu[thiscpu]);
 		KASSERT(hw_core_id() == thiscpu,
 				("thiscpu/hw_core_id() (%u/%u) mismatch", thiscpu,
 				 hw_core_id()));
