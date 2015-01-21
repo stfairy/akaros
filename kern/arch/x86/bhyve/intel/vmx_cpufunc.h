@@ -127,7 +127,7 @@ static __inline int vmread(uint64_t r, uint64_t * addr)
 	return (error);
 }
 
-static void __inline VMCLEAR(uint8_t *irq, struct vmcs *vmcs)
+static void __inline VMCLEAR(int8_t *irq, struct vmcs *vmcs)
 {
 	int err;
 
@@ -138,7 +138,7 @@ static void __inline VMCLEAR(uint8_t *irq, struct vmcs *vmcs)
 	enable_irqsave(irq);
 }
 
-static void __inline VMPTRLD(uint8_t *irq, struct vmcs *vmcs)
+static void __inline VMPTRLD(int8_t *irq, struct vmcs *vmcs)
 {
 	int err;
 

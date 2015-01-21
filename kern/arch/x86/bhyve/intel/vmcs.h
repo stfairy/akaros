@@ -78,7 +78,10 @@ static __inline void vmcs_write(uint32_t encoding, uint64_t val)
 	int error;
 
 	error = vmwrite(encoding, val);
-	KASSERT(error == 0, ("vmcs_write(%u) error %d", encoding, error));
+	if (error) {
+		printk("vmcs_write(%u) error %d", encoding, error);
+		assert(0);
+	}
 }
 #endif /* _VMX_CPUFUNC_H_ */
 
