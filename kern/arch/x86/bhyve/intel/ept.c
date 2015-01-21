@@ -158,7 +158,7 @@ static void invept_single_context(void *arg)
 	invept(INVEPT_TYPE_SINGLE_CONTEXT, desc);
 }
 
-void ept_invalidate_mappings(u_long eptp)
+void ept_invalidate_mappings(unsigned long eptp)
 {
 	struct invept_desc invept_desc = { 0 };
 

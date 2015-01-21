@@ -144,7 +144,7 @@ void msr_bitmap_initialize(char *bitmap)
 	memset(bitmap, 0xff, PAGE_SIZE);
 }
 
-int msr_bitmap_change_access(char *bitmap, u_int msr, int access)
+int msr_bitmap_change_access(char *bitmap, unsigned int msr, int access)
 {
 	int byte, bit;
 
@@ -339,7 +339,8 @@ void vmx_msr_guest_exit(struct vmx *vmx, int vcpuid)
 }
 
 int
-vmx_rdmsr(struct vmx *vmx, int vcpuid, u_int num, uint64_t * val, bool * retu)
+vmx_rdmsr(struct vmx *vmx, int vcpuid, unsigned int num, uint64_t * val,
+	  bool * retu)
 {
 	int error = 0;
 
@@ -361,7 +362,8 @@ vmx_rdmsr(struct vmx *vmx, int vcpuid, u_int num, uint64_t * val, bool * retu)
 	return (error);
 }
 
-int vmx_wrmsr(struct vmx *vmx, int vcpuid, u_int num, uint64_t val, bool * retu)
+int vmx_wrmsr(struct vmx *vmx, int vcpuid, unsigned int num, uint64_t val,
+	      bool * retu)
 {
 	uint64_t changed;
 	int error;

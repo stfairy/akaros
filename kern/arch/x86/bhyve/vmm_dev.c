@@ -141,7 +141,7 @@ static int vmmdev_rw(struct cdev *cdev, struct uio *uio, int flags)
 }
 
 static int
-vmmdev_ioctl(struct cdev *cdev, u_long cmd, caddr_t data, int fflag,
+vmmdev_ioctl(struct cdev *cdev, unsigned long cmd, caddr_t data, int fflag,
 			 struct thread *td)
 {
 	int error, vcpu, state_changed, size;

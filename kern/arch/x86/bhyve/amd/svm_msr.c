@@ -95,7 +95,8 @@ void svm_msr_guest_exit(struct svm_softc *sc, int vcpu)
 }
 
 int
-svm_rdmsr(struct svm_softc *sc, int vcpu, u_int num, uint64_t * result,
+svm_rdmsr(struct svm_softc *sc, int vcpu, unsigned int num,
+	  uint64_t * result,
 		  bool * retu)
 {
 	int error = 0;
@@ -113,7 +114,8 @@ svm_rdmsr(struct svm_softc *sc, int vcpu, u_int num, uint64_t * result,
 }
 
 int
-svm_wrmsr(struct svm_softc *sc, int vcpu, u_int num, uint64_t val, bool * retu)
+svm_wrmsr(struct svm_softc *sc, int vcpu, unsigned int num, uint64_t val,
+	  bool * retu)
 {
 	int error = 0;
 

@@ -129,7 +129,7 @@ int lapic_intr_msi(struct vm *vm, uint64_t addr, uint64_t msg)
 	return (0);
 }
 
-static boolean_t x2apic_msr(u_int msr)
+static boolean_t x2apic_msr(unsigned int msr)
 {
 	if (msr >= 0x800 && msr <= 0xBFF)
 		return (TRUE);
@@ -137,13 +137,13 @@ static boolean_t x2apic_msr(u_int msr)
 		return (FALSE);
 }
 
-static u_int x2apic_msr_to_regoff(u_int msr)
+static unsigned int x2apic_msr_to_regoff(unsigned int msr)
 {
 
 	return ((msr - 0x800) << 4);
 }
 
-boolean_t lapic_msr(u_int msr)
+boolean_t lapic_msr(unsigned int msr)
 {
 
 	if (x2apic_msr(msr) || (msr == MSR_APICBASE))
@@ -152,7 +152,8 @@ boolean_t lapic_msr(u_int msr)
 		return (FALSE);
 }
 
-int lapic_rdmsr(struct vm *vm, int cpu, u_int msr, uint64_t * rval, bool * retu)
+int lapic_rdmsr(struct vm *vm, int cpu, unsigned int msr, uint64_t * rval,
+		bool * retu)
 {
 	int error;
 	unsigned int offset;
@@ -171,7 +172,8 @@ int lapic_rdmsr(struct vm *vm, int cpu, u_int msr, uint64_t * rval, bool * retu)
 	return (error);
 }
 
-int lapic_wrmsr(struct vm *vm, int cpu, u_int msr, uint64_t val, bool * retu)
+int lapic_wrmsr(struct vm *vm, int cpu, unsigned int msr, uint64_t val,
+		bool * retu)
 {
 	int error;
 	unsigned int offset;

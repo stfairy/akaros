@@ -341,7 +341,7 @@ GETCC(16);
 GETCC(32);
 GETCC(64);
 
-static u_long getcc(int opsize, uint64_t x, uint64_t y)
+static unsigned long getcc(int opsize, uint64_t x, uint64_t y)
 {
 	KASSERT(opsize == 1 || opsize == 2 || opsize == 4 || opsize == 8,
 			("getcc: invalid operand size %d", opsize));

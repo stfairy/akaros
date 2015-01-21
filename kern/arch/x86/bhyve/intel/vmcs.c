@@ -169,6 +169,7 @@ vmcs_seg_desc_encoding(int seg, uint32_t * base, uint32_t * lim, uint32_t * acc)
 
 int vmcs_getreg(struct vmcs *vmcs, int running, int ident, uint64_t * retval)
 {
+	uint8_t irq;
 	int error;
 	uint32_t encoding;
 
@@ -188,18 +189,19 @@ int vmcs_getreg(struct vmcs *vmcs, int running, int ident, uint64_t * retval)
 		return (EINVAL);
 
 	if (!running)
-		VMPTRLD(vmcs);
+		VMPTRLD(&irq, vmcs);
 
 	error = vmread(encoding, retval);
 
 	if (!running)
-		VMCLEAR(vmcs);
+		VMCLEAR(&irq, vmcs);
 
 	return (error);
 }
 
 int vmcs_setreg(struct vmcs *vmcs, int running, int ident, uint64_t val)
 {
+	uint8_t irq;
 	int error;
 	uint32_t encoding;
 
@@ -214,18 +216,19 @@ int vmcs_setreg(struct vmcs *vmcs, int running, int ident, uint64_t val)
 	val = vmcs_fix_regval(encoding, val);
 
 	if (!running)
-		VMPTRLD(vmcs);
+		VMPTRLD(&irq, vmcs);
 
 	error = vmwrite(encoding, val);
 
 	if (!running)
-		VMCLEAR(vmcs);
+		VMCLEAR(&irq, vmcs);
 
 	return (error);
 }
 
 int vmcs_setdesc(struct vmcs *vmcs, int running, int seg, struct seg_desc *desc)
 {
+	uint8_t irq;
 	int error;
 	uint32_t base, limit, access;
 
@@ -234,7 +237,7 @@ int vmcs_setdesc(struct vmcs *vmcs, int running, int seg, struct seg_desc *desc)
 		panic("vmcs_setdesc: invalid segment register %d", seg);
 
 	if (!running)
-		VMPTRLD(vmcs);
+		VMPTRLD(&irq, vmcs);
 	if ((error = vmwrite(base, desc->base)) != 0)
 		goto done;
 
@@ -247,12 +250,13 @@ int vmcs_setdesc(struct vmcs *vmcs, int running, int seg, struct seg_desc *desc)
 	}
 done:
 	if (!running)
-		VMCLEAR(vmcs);
+		VMCLEAR(&irq, vmcs);
 	return (error);
 }
 
 int vmcs_getdesc(struct vmcs *vmcs, int running, int seg, struct seg_desc *desc)
 {
+	uint8_t irq;
 	int error;
 	uint32_t base, limit, access;
 	uint64_t u64;
@@ -262,7 +266,7 @@ int vmcs_getdesc(struct vmcs *vmcs, int running, int seg, struct seg_desc *desc)
 		panic("vmcs_getdesc: invalid segment register %d", seg);
 
 	if (!running)
-		VMPTRLD(vmcs);
+		VMPTRLD(&irq, vmcs);
 	if ((error = vmread(base, &u64)) != 0)
 		goto done;
 	desc->base = u64;
@@ -278,15 +282,17 @@ int vmcs_getdesc(struct vmcs *vmcs, int running, int seg, struct seg_desc *desc)
 	}
 done:
 	if (!running)
-		VMCLEAR(vmcs);
+		VMCLEAR(&irq, vmcs);
 	return (error);
 }
 
-int vmcs_set_msr_save(struct vmcs *vmcs, u_long g_area, u_int g_count)
+int vmcs_set_msr_save(struct vmcs *vmcs, unsigned long g_area,
+		      unsigned int g_count)
 {
+	uint8_t irq;
 	int error;
 
-	VMPTRLD(vmcs);
+	VMPTRLD(&irq, vmcs);
 
 	/*
 	 * Guest MSRs are saved in the VM-exit MSR-store area.
@@ -305,12 +311,13 @@ int vmcs_set_msr_save(struct vmcs *vmcs, u_long g_area, u_int g_count)
 
 	error = 0;
 done:
-	VMCLEAR(vmcs);
+	VMCLEAR(&irq, vmcs);
 	return (error);
 }
 
 int vmcs_init(struct vmcs *vmcs)
 {
+	uint8_t irq;
 	int error, codesel, datasel, tsssel;
 	unsigned long cr0, cr4, efer;
 	uint64_t pat, fsbase, idtrbase;
@@ -322,7 +329,7 @@ int vmcs_init(struct vmcs *vmcs)
 	/*
 	 * Make sure we have a "current" VMCS to work with.
 	 */
-	VMPTRLD(vmcs);
+	VMPTRLD(&irq, vmcs);
 
 	// we suspect we don't care about 32-bit guests.
 #if 0
@@ -397,14 +404,14 @@ int vmcs_init(struct vmcs *vmcs)
 		goto done;
 
 	/* instruction pointer */
-	if ((error = vmwrite(VMCS_HOST_RIP, (u_long) vmx_exit_guest)) != 0)
+	if ((error = vmwrite(VMCS_HOST_RIP, (unsigned long) vmx_exit_guest)) != 0)
 		goto done;
 
 	/* link pointer */
 	if ((error = vmwrite(VMCS_LINK_POINTER, ~0)) != 0)
 		goto done;
 done:
-	VMCLEAR(vmcs);
+	VMCLEAR(&irq, vmcs);
 	return (error);
 }
 

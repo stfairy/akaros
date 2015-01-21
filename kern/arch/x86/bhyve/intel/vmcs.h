@@ -45,7 +45,8 @@ struct msr_entry {
 
 };
 
-int vmcs_set_msr_save(struct vmcs *vmcs, u_long g_area, u_int g_count);
+int vmcs_set_msr_save(struct vmcs *vmcs, unsigned long g_area,
+		      unsigned int g_count);
 int vmcs_init(struct vmcs *vmcs);
 int vmcs_getreg(struct vmcs *vmcs, int running, int ident, uint64_t * rv);
 int vmcs_setreg(struct vmcs *vmcs, int running, int ident, uint64_t val);

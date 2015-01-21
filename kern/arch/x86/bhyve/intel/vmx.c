@@ -365,13 +365,13 @@ static int vmx_allow_x2apic_msrs(struct vmx *vmx)
 	return (error);
 }
 
-u_long vmx_fix_cr0(u_long cr0)
+unsigned long vmx_fix_cr0(unsigned long cr0)
 {
 
 	return ((cr0 | cr0_ones_mask) & ~cr0_zeros_mask);
 }
 
-u_long vmx_fix_cr4(u_long cr4)
+unsigned long vmx_fix_cr4(unsigned long cr4)
 {
 
 	return ((cr4 | cr4_ones_mask) & ~cr4_zeros_mask);
@@ -888,7 +888,7 @@ static void *vmx_vminit(struct vm *vm, pmap_t pmap)
 
 		VMPTRLD(vmcs);
 		error = 0;
-		error += vmwrite(VMCS_HOST_RSP, (u_long) & vmx->ctx[i]);
+		error += vmwrite(VMCS_HOST_RSP, (unsigned long) & vmx->ctx[i]);
 		error += vmwrite(VMCS_EPTP, vmx->eptp);
 		error += vmwrite(VMCS_PIN_BASED_CTLS, pinbased_ctls);
 		error += vmwrite(VMCS_PRI_PROC_BASED_CTLS, procbased_ctls);
@@ -1989,7 +1989,8 @@ static enum task_switch_reason vmx_task_switch_reason(uint64_t qual)
 }
 
 static int
-emulate_wrmsr(struct vmx *vmx, int vcpuid, u_int num, uint64_t val, bool * retu)
+emulate_wrmsr(struct vmx *vmx, int vcpuid, unsigned int num, uint64_t val,
+	      bool * retu)
 {
 	int error;
 
@@ -2001,7 +2002,8 @@ emulate_wrmsr(struct vmx *vmx, int vcpuid, u_int num, uint64_t val, bool * retu)
 	return (error);
 }
 
-static int emulate_rdmsr(struct vmx *vmx, int vcpuid, u_int num, bool * retu)
+static int emulate_rdmsr(struct vmx *vmx, int vcpuid, unsigned int num,
+			 bool * retu)
 {
 	struct vmxctx *vmxctx;
 	uint64_t result;

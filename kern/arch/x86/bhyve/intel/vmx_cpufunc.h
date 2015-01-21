@@ -127,7 +127,7 @@ static __inline int vmread(uint64_t r, uint64_t * addr)
 	return (error);
 }
 
-static void __inline VMCLEAR(struct vmcs *vmcs)
+static void __inline VMCLEAR(uint8_t *irq, struct vmcs *vmcs)
 {
 	int err;
 
@@ -135,14 +135,14 @@ static void __inline VMCLEAR(struct vmcs *vmcs)
 	if (err != 0)
 		panic("%s: vmclear(%p) error %d", __func__, vmcs, err);
 
-	critical_exit();
+	enable_irqsave(irq);
 }
 
-static void __inline VMPTRLD(struct vmcs *vmcs)
+static void __inline VMPTRLD(uint8_t *irq, struct vmcs *vmcs)
 {
 	int err;
 
-	critical_enter();
+	disable_irqsave(irq);
 
 	err = vmptrld(vmcs);
 	if (err != 0)

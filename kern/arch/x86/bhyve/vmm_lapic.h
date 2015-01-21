@@ -31,10 +31,11 @@
 
 struct vm;
 
-boolean_t lapic_msr(u_int num);
-int lapic_rdmsr(struct vm *vm, int cpu, u_int msr, uint64_t * rval,
+boolean_t lapic_msr(unsigned int num);
+int lapic_rdmsr(struct vm *vm, int cpu, unsigned int msr, uint64_t * rval,
 				bool * retu);
-int lapic_wrmsr(struct vm *vm, int cpu, u_int msr, uint64_t wval, bool * retu);
+int lapic_wrmsr(struct vm *vm, int cpu, unsigned int msr, uint64_t wval,
+		bool * retu);
 
 int lapic_mmio_read(void *vm, int cpu, uint64_t gpa,
 					uint64_t * rval, int size, void *arg);

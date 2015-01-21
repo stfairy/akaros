@@ -150,7 +150,7 @@ static int vtd_max_domains(struct vtdmap *vtdmap)
 	}
 }
 
-static u_int domain_id(void)
+static unsigned int domain_id(void)
 {
 	unsigned int id;
 	struct domain *dom;

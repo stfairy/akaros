@@ -1032,7 +1032,7 @@ static void clear_nmi_blocking(struct svm_softc *sc, int vcpu)
 }
 
 static int
-emulate_wrmsr(struct svm_softc *sc, int vcpu, u_int num, uint64_t val,
+emulate_wrmsr(struct svm_softc *sc, int vcpu, unsigned int num, uint64_t val,
 			  bool * retu)
 {
 	int error;
@@ -1047,7 +1047,8 @@ emulate_wrmsr(struct svm_softc *sc, int vcpu, u_int num, uint64_t val,
 	return (error);
 }
 
-static int emulate_rdmsr(struct svm_softc *sc, int vcpu, u_int num, bool * retu)
+static int emulate_rdmsr(struct svm_softc *sc, int vcpu, unsigned int num,
+			 bool * retu)
 {
 	struct vmcb_state *state;
 	struct svm_regctx *ctx;

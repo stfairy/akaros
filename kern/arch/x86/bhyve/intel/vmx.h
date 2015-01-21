@@ -131,8 +131,8 @@ static_assert((offsetof(struct vmx, pir_desc[0]) & 63) == 0);
 int vmx_enter_guest(struct vmxctx *ctx, struct vmx *vmx, int launched);
 void vmx_call_isr(uintptr_t entry);
 
-u_long vmx_fix_cr0(u_long cr0);
-u_long vmx_fix_cr4(u_long cr4);
+unsigned long vmx_fix_cr0(unsigned long cr0);
+unsigned long vmx_fix_cr4(unsigned long cr4);
 
 extern char vmx_exit_guest[];
 

@@ -71,7 +71,7 @@ struct vrtc {
 	struct vm *vm;
 	struct mtx mtx;
 	struct callout callout;
-	u_int addr;					/* RTC register to read or write */
+	unsigned int addr;					/* RTC register to read or write */
 	sbintime_t base_uptime;
 	time_t base_rtctime;
 	struct rtcdev rtcdev;
