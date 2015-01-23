@@ -400,7 +400,7 @@ static void vpid_alloc(uint16_t * vpid, int num)
 	}
 
 	if (i < num) {
-		atomic_add_int(&vpid_alloc_failed, 1);
+		atomic_add((void *)&vpid_alloc_failed, 1);
 
 		/*
 		 * If the unit number allocator does not have enough unique
@@ -436,7 +436,7 @@ static void vpid_init(void)
 	vpid_unr = new_unrhdr(VM_MAXCPU + 1, 0xffff, NULL);
 }
 
-static void vmx_disable(void *arg __unused)
+static void vmx_disable(void *arg /*__unused*/)
 {
 	struct invvpid_desc invvpid_desc = { 0 };
 	struct invept_desc invept_desc = { 0 };
@@ -472,7 +472,7 @@ static int vmx_cleanup(void)
 	return (0);
 }
 
-static void vmx_enable(void *arg __unused)
+static void vmx_enable(void *arg /*__unused*/)
 {
 	int error;
 	uint64_t feature_control;
