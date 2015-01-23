@@ -1,0 +1,8 @@
+use genregs.go
+
+See the example script. 
+
+This was a long process pipeline, from genregs.c to cc -E genregs.c > genregs.go to some sed fun,
+but it works.
+
+It's likely worth the effort, maybe.
