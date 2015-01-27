@@ -1,0 +1,28 @@
+A few notes on porting drivers, i.e. stuff we learned the hard way.
+
+o Prefer spatch. If spatch won't work for some reason, ask the list.
+  If it still doesn't work, see what version you have. 
+  If it still doesn't work, then do a sed script
+  Do the change manually only as a last resort. 
+
+o Never change constants by hand. See the c/go pipeline in scripts/spatch/bsd
+  Basically, you map a constant to an int, then back out to an Akaros constant
+
+o Never #if 0 code you want to come back to later.
+  These drivers tend to have #if 0 code and you'll forget which was yours.
+  You can #if !ROS_KERN or better
+  #ifdef PORT_ME_LATER or something odd enough to be noticed.
+
+o If you can some wacky thing like this
+  #define a(x) some_awful_cpp_code(x >> barf  | x << zong)
+  Never do this:
+   #define a(x) 0 // some_awful_cpp_code(x >> barf  | x << zong)
+  it eats the rest of the line
+  Never do this:
+   #define a(x) 0 /* some_awful_cpp_code(x >> barf  | x << zong)*/
+  Consider this:
+   #define a(x) { assert(0); return 0;} /* some_awful_cpp_code(x >> barf  | x << zong)*/
+  or similar. Make sure if the code is called, you will die.
+
+o Single value per file found in bsd and linux
+  Mistake. If you see it, find some way to transform it to plan 9 style ctl files.
