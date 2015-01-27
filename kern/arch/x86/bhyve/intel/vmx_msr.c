@@ -63,7 +63,7 @@ static bool vmx_ctl_allows_zero_setting(uint64_t msr_val, int bitpos)
 uint32_t vmx_revision(void)
 {
 
-	return (read_msr(MSR_VMX_BASIC) & 0xffffffff);
+	return (read_msr(MSR_IA32_VMX_BASIC) & 0xffffffff);
 }
 
 /*
@@ -89,7 +89,7 @@ vmx_set_ctlreg(int ctl_reg, int true_ctl_reg, uint32_t ones_mask,
 	if ((ones_mask ^ zeros_mask) != (ones_mask | zeros_mask))
 		return (EINVAL);
 
-	if (read_msr(MSR_VMX_BASIC) & (1UL << 55))
+	if (read_msr(MSR_IA32_VMX_BASIC) & (1UL << 55))
 		true_ctls_avail = TRUE;
 	else
 		true_ctls_avail = FALSE;

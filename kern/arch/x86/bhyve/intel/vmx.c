@@ -524,10 +524,10 @@ static int vmx_init(int ipinum)
 	}
 
 	/*
-	 * Verify capabilities MSR_VMX_BASIC:
+	 * Verify capabilities MSR_IA32_VMX_BASIC:
 	 * - bit 54 indicates support for INS/OUTS decoding
 	 */
-	basic = read_msr(MSR_VMX_BASIC);
+	basic = read_msr(MSR_IA32_VMX_BASIC);
 	if ((basic & (1UL << 54)) == 0) {
 		printf("vmx_init: processor does not support desired basic "
 			   "capabilities\n");
@@ -535,8 +535,8 @@ static int vmx_init(int ipinum)
 	}
 
 	/* Check support for primary processor-based VM-execution controls */
-	error = vmx_set_ctlreg(MSR_VMX_PROCBASED_CTLS,
-						   MSR_VMX_TRUE_PROCBASED_CTLS,
+	error = vmx_set_ctlreg(MSR_IA32_VMX_PROCBASED_CTLS,
+						   MSR_IA32_VMX_TRUE_PROCBASED_CTLS,
 						   PROCBASED_CTLS_ONE_SETTING,
 						   PROCBASED_CTLS_ZERO_SETTING, &procbased_ctls);
 	if (error) {
@@ -549,8 +549,8 @@ static int vmx_init(int ipinum)
 	procbased_ctls &= ~PROCBASED_CTLS_WINDOW_SETTING;
 
 	/* Check support for secondary processor-based VM-execution controls */
-	error = vmx_set_ctlreg(MSR_VMX_PROCBASED_CTLS2,
-						   MSR_VMX_PROCBASED_CTLS2,
+	error = vmx_set_ctlreg(MSR_IA32_VMX_PROCBASED_CTLS2,
+						   MSR_IA32_VMX_PROCBASED_CTLS2,
 						   PROCBASED_CTLS2_ONE_SETTING,
 						   PROCBASED_CTLS2_ZERO_SETTING, &procbased_ctls2);
 	if (error) {
@@ -560,14 +560,14 @@ static int vmx_init(int ipinum)
 	}
 
 	/* Check support for VPID */
-	error = vmx_set_ctlreg(MSR_VMX_PROCBASED_CTLS2, MSR_VMX_PROCBASED_CTLS2,
+	error = vmx_set_ctlreg(MSR_IA32_VMX_PROCBASED_CTLS2, MSR_IA32_VMX_PROCBASED_CTLS2,
 						   PROCBASED2_ENABLE_VPID, 0, &tmp);
 	if (error == 0)
 		procbased_ctls2 |= PROCBASED2_ENABLE_VPID;
 
 	/* Check support for pin-based VM-execution controls */
-	error = vmx_set_ctlreg(MSR_VMX_PINBASED_CTLS,
-						   MSR_VMX_TRUE_PINBASED_CTLS,
+	error = vmx_set_ctlreg(MSR_IA32_VMX_PINBASED_CTLS,
+						   MSR_IA32_VMX_TRUE_PINBASED_CTLS,
 						   PINBASED_CTLS_ONE_SETTING,
 						   PINBASED_CTLS_ZERO_SETTING, &pinbased_ctls);
 	if (error) {
@@ -577,7 +577,7 @@ static int vmx_init(int ipinum)
 	}
 
 	/* Check support for VM-exit controls */
-	error = vmx_set_ctlreg(MSR_VMX_EXIT_CTLS, MSR_VMX_TRUE_EXIT_CTLS,
+	error = vmx_set_ctlreg(MSR_IA32_VMX_EXIT_CTLS, MSR_IA32_VMX_TRUE_EXIT_CTLS,
 						   VM_EXIT_CTLS_ONE_SETTING,
 						   VM_EXIT_CTLS_ZERO_SETTING, &exit_ctls);
 	if (error) {
@@ -587,7 +587,7 @@ static int vmx_init(int ipinum)
 	}
 
 	/* Check support for VM-entry controls */
-	error = vmx_set_ctlreg(MSR_VMX_ENTRY_CTLS, MSR_VMX_TRUE_ENTRY_CTLS,
+	error = vmx_set_ctlreg(MSR_IA32_VMX_ENTRY_CTLS, MSR_IA32_VMX_TRUE_ENTRY_CTLS,
 						   VM_ENTRY_CTLS_ONE_SETTING,
 						   VM_ENTRY_CTLS_ZERO_SETTING, &entry_ctls);
 	if (error) {
@@ -600,25 +600,25 @@ static int vmx_init(int ipinum)
 	 * Check support for optional features by testing them
 	 * as individual bits
 	 */
-	cap_halt_exit = (vmx_set_ctlreg(MSR_VMX_PROCBASED_CTLS,
-									MSR_VMX_TRUE_PROCBASED_CTLS,
+	cap_halt_exit = (vmx_set_ctlreg(MSR_IA32_VMX_PROCBASED_CTLS,
+									MSR_IA32_VMX_TRUE_PROCBASED_CTLS,
 									PROCBASED_HLT_EXITING, 0, &tmp) == 0);
 
-	cap_monitor_trap = (vmx_set_ctlreg(MSR_VMX_PROCBASED_CTLS,
-									   MSR_VMX_PROCBASED_CTLS,
+	cap_monitor_trap = (vmx_set_ctlreg(MSR_IA32_VMX_PROCBASED_CTLS,
+									   MSR_IA32_VMX_PROCBASED_CTLS,
 									   PROCBASED_MTF, 0, &tmp) == 0);
 
-	cap_pause_exit = (vmx_set_ctlreg(MSR_VMX_PROCBASED_CTLS,
-									 MSR_VMX_TRUE_PROCBASED_CTLS,
+	cap_pause_exit = (vmx_set_ctlreg(MSR_IA32_VMX_PROCBASED_CTLS,
+									 MSR_IA32_VMX_TRUE_PROCBASED_CTLS,
 									 PROCBASED_PAUSE_EXITING, 0, &tmp) == 0);
 
-	cap_unrestricted_guest = (vmx_set_ctlreg(MSR_VMX_PROCBASED_CTLS2,
-											 MSR_VMX_PROCBASED_CTLS2,
+	cap_unrestricted_guest = (vmx_set_ctlreg(MSR_IA32_VMX_PROCBASED_CTLS2,
+											 MSR_IA32_VMX_PROCBASED_CTLS2,
 											 PROCBASED2_UNRESTRICTED_GUEST, 0,
 											 &tmp) == 0);
 
-	cap_invpcid = (vmx_set_ctlreg(MSR_VMX_PROCBASED_CTLS2,
-								  MSR_VMX_PROCBASED_CTLS2,
+	cap_invpcid = (vmx_set_ctlreg(MSR_IA32_VMX_PROCBASED_CTLS2,
+								  MSR_IA32_VMX_PROCBASED_CTLS2,
 								  PROCBASED2_ENABLE_INVPCID, 0, &tmp) == 0);
 
 	/*
@@ -629,16 +629,17 @@ static int vmx_init(int ipinum)
 						   PROCBASED2_APIC_REGISTER_VIRTUALIZATION |
 						   PROCBASED2_VIRTUAL_INTERRUPT_DELIVERY);
 
-	use_tpr_shadow = (vmx_set_ctlreg(MSR_VMX_PROCBASED_CTLS,
-									 MSR_VMX_TRUE_PROCBASED_CTLS,
+	use_tpr_shadow = (vmx_set_ctlreg(MSR_IA32_VMX_PROCBASED_CTLS,
+									 MSR_IA32_VMX_TRUE_PROCBASED_CTLS,
 									 PROCBASED_USE_TPR_SHADOW, 0, &tmp) == 0);
 
-	error = vmx_set_ctlreg(MSR_VMX_PROCBASED_CTLS2, MSR_VMX_PROCBASED_CTLS2,
+	error = vmx_set_ctlreg(MSR_IA32_VMX_PROCBASED_CTLS2, MSR_IA32_VMX_PROCBASED_CTLS2,
 						   procbased2_vid_bits, 0, &tmp);
 	if (error == 0 && use_tpr_shadow) {
 		virtual_interrupt_delivery = 1;
-		TUNABLE_INT_FETCH("hw.vmm.vmx.use_apic_vid",
-						  &virtual_interrupt_delivery);
+		// TODO: make it a param.
+		//TUNABLE_INT_FETCH("hw.vmm.vmx.use_apic_vid",
+		//				  &virtual_interrupt_delivery);
 	}
 
 	if (virtual_interrupt_delivery) {
@@ -657,8 +658,8 @@ static int vmx_init(int ipinum)
 		 * Check for Posted Interrupts only if Virtual Interrupt
 		 * Delivery is enabled.
 		 */
-		error = vmx_set_ctlreg(MSR_VMX_PINBASED_CTLS,
-							   MSR_VMX_TRUE_PINBASED_CTLS,
+		error = vmx_set_ctlreg(MSR_IA32_VMX_PINBASED_CTLS,
+							   MSR_IA32_VMX_TRUE_PINBASED_CTLS,
 							   PINBASED_POSTED_INTERRUPT, 0, &tmp);
 		if (error == 0) {
 			pirvec = vmm_ipi_alloc();
@@ -688,8 +689,8 @@ static int vmx_init(int ipinum)
 	/*
 	 * Stash the cr0 and cr4 bits that must be fixed to 0 or 1
 	 */
-	fixed0 = read_msr(MSR_VMX_CR0_FIXED0);
-	fixed1 = read_msr(MSR_VMX_CR0_FIXED1);
+	fixed0 = read_msr(MSR_IA32_VMX_CR0_FIXED0);
+	fixed1 = read_msr(MSR_IA32_VMX_CR0_FIXED1);
 	cr0_ones_mask = fixed0 & fixed1;
 	cr0_zeros_mask = ~fixed0 & ~fixed1;
 
@@ -705,8 +706,8 @@ static int vmx_init(int ipinum)
 	 */
 	cr0_zeros_mask |= (CR0_NW | CR0_CD);
 
-	fixed0 = read_msr(MSR_VMX_CR4_FIXED0);
-	fixed1 = read_msr(MSR_VMX_CR4_FIXED1);
+	fixed0 = read_msr(MSR_IA32_VMX_CR4_FIXED0);
+	fixed1 = read_msr(MSR_IA32_VMX_CR4_FIXED1);
 	cr4_ones_mask = fixed0 & fixed1;
 	cr4_zeros_mask = ~fixed0 & ~fixed1;
 
@@ -730,7 +731,7 @@ static void vmx_trigger_hostintr(int vector)
 	gd = &idt[vector];
 
 	KASSERT(vector >= 32 && vector <= 255, ("vmx_trigger_hostintr: "
-											"invalid vector %d", vector));
+			"invalid vector %d", vector));
 	KASSERT(gd->gd_p == 1, ("gate descriptor for vector %d not present",
 							vector));
 	KASSERT(gd->gd_type == SDT_SYSIGT, ("gate descriptor for vector %d "

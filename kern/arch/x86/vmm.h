@@ -33,7 +33,18 @@
 
 // For Akaros for now
 typedef uintptr_t vm_offset_t;
+typedef uintptr_t vm_paddr_t;
+// TODO: what is this?
+typedef uint64_t cpuset_t;
 #define GSEL(s,r) (((s)<<3)|(r))
+
+// TODO: 
+
+// 0 is OK in this case as we will die on the new_unrhdr */
+#define alloc_unr(x) 0
+#define free_unr(x,y) assert(0)
+#define new_unrhdr(x,y,z) assert(0)
+#define delete_unrhdr(x) assert(0)
 
 // TOOD: FIX all the cmd stuff by moving it to ctl. Later.
 #define SYSCTL_DECL(x)
@@ -41,7 +52,10 @@ typedef uintptr_t vm_offset_t;
 #define SYSCTL_ULONG(a, b, c, d, e, f, g)
 #define SYSCTL_INT(a, b, c, d, e, f, g)
 #define SYSCTL_UINT(a, b, c, d, e, f, g)
+#define VMM_STAT(a,b,x,y) int x
+#define KASSERT(x,y) if (! (x)) {printk y; assert(x);}
 
+#define bootverbose 1
 // TODO: make this work even out of a function.
 #undef static_assert
 #define static_assert(x)
@@ -120,7 +134,7 @@ enum x2apic_state {
 #define	VM_INTINFO_HWEXCEPTION	(3 << 8)
 #define	VM_INTINFO_SWINTR	(4 << 8)
 
-#ifdef _KERNEL
+#ifdef ROS_KERNEL
 
 #define	VM_MAX_NAMELEN	32
 
@@ -198,7 +212,7 @@ int vm_gpabase2memseg(struct vm *vm, vm_paddr_t gpabase,
 	      struct vm_memory_segment *seg);
 int vm_get_memobj(struct vm *vm, vm_paddr_t gpa, size_t len,
 		  vm_offset_t *offset, struct vm_object **object);
-boolean_t vm_mem_allocated(struct vm *vm, vm_paddr_t gpa);
+bool vm_mem_allocated(struct vm *vm, vm_paddr_t gpa);
 int vm_get_register(struct vm *vm, int vcpu, int reg, uint64_t *retval);
 int vm_set_register(struct vm *vm, int vcpu, int reg, uint64_t val);
 int vm_get_seg_desc(struct vm *vm, int vcpu, int reg,
