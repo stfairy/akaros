@@ -882,7 +882,7 @@ struct vrtc *vrtc_init(struct vm *vm)
 	struct rtcdev *rtc;
 	time_t curtime;
 
-	vrtc = malloc(sizeof(struct vrtc), M_VRTC, M_WAITOK | M_ZERO);
+	vrtc = kzmalloc(sizeof(struct vrtc), KERN_WAIT);
 	vrtc->vm = vm;
 	mtx_init(&vrtc->mtx, "vrtc lock", NULL, MTX_DEF);
 	callout_init(&vrtc->callout, 1);
@@ -915,5 +915,5 @@ void vrtc_cleanup(struct vrtc *vrtc)
 {
 
 	callout_drain(&vrtc->callout);
-	free(vrtc, M_VRTC);
+	kfree(vrtc);
 }

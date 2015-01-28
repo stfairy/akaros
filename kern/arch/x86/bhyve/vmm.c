@@ -402,7 +402,7 @@ int vm_create(const char *name, struct vm **retvm)
 	if (vmspace == NULL)
 		return (ENOMEM);
 
-	vm = malloc(sizeof(struct vm), M_VM, M_WAITOK | M_ZERO);
+	vm = kzmalloc(sizeof(struct vm), KERN_WAIT);
 	strcpy(vm->name, name);
 	vm->num_mem_segs = 0;
 	vm->vmspace = vmspace;
@@ -461,7 +461,7 @@ static void vm_cleanup(struct vm *vm, bool destroy)
 void vm_destroy(struct vm *vm)
 {
 	vm_cleanup(vm, true);
-	free(vm, M_VM);
+	kfree(vm);
 }
 
 int vm_reinit(struct vm *vm)

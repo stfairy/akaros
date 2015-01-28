@@ -457,7 +457,7 @@ vmmdev_ioctl(struct cdev *cdev, unsigned long cmd, caddr_t data, int fflag,
 				error = ERANGE;
 				break;
 			}
-			cpuset = malloc(size, M_TEMP, M_WAITOK | M_ZERO);
+			cpuset = kzmalloc(size, KERN_WAIT);
 			if (vm_cpuset->which == VM_ACTIVE_CPUS)
 				*cpuset = vm_active_cpus(sc->vm);
 			else if (vm_cpuset->which == VM_SUSPENDED_CPUS)
@@ -466,7 +466,7 @@ vmmdev_ioctl(struct cdev *cdev, unsigned long cmd, caddr_t data, int fflag,
 				error = EINVAL;
 			if (error == 0)
 				error = copyout(cpuset, vm_cpuset->cpus, size);
-			free(cpuset, M_TEMP);
+			kfree(cpuset);
 			break;
 		case VM_SET_INTINFO:
 			vmii = (struct vm_intinfo *)data;
@@ -545,7 +545,7 @@ static void vmmdev_destroy(void *arg)
 		mtx_unlock(&vmmdev_mtx);
 	}
 
-	free(sc, M_VMMDEV);
+	kfree(sc);
 }
 
 static int sysctl_vmm_destroy(SYSCTL_HANDLER_ARGS)
@@ -624,7 +624,7 @@ static int sysctl_vmm_create(SYSCTL_HANDLER_ARGS)
 	if (error != 0)
 		return (error);
 
-	sc = malloc(sizeof(struct vmmdev_softc), M_VMMDEV, M_WAITOK | M_ZERO);
+	sc = kzmalloc(sizeof(struct vmmdev_softc), KERN_WAIT);
 	sc->vm = vm;
 
 	/*

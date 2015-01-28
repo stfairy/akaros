@@ -53,7 +53,8 @@ typedef uint64_t cpuset_t;
 #define SYSCTL_INT(a, b, c, d, e, f, g)
 #define SYSCTL_UINT(a, b, c, d, e, f, g)
 #define VMM_STAT(a,b,x,y) int x
-#define KASSERT(x,y) if (! (x)) {printk y; assert(x);}
+#define TUNABLE_INT_FETCH(x,y) assert(0)
+#define KASSERT(x,y) assert(0); /*if (! x) {printk y ; assert(0); }*/
 
 #define bootverbose 1
 // TODO: make this work even out of a function.

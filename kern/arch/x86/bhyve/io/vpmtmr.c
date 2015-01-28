@@ -60,7 +60,7 @@ struct vpmtmr *vpmtmr_init(struct vm *vm)
 	struct vpmtmr *vpmtmr;
 	struct bintime bt;
 
-	vpmtmr = malloc(sizeof(struct vpmtmr), M_VPMTMR, M_WAITOK | M_ZERO);
+	vpmtmr = kzmalloc(sizeof(struct vpmtmr), KERN_WAIT);
 	vpmtmr->baseuptime = sbinuptime();
 	vpmtmr->baseval = 0;
 
@@ -73,7 +73,7 @@ struct vpmtmr *vpmtmr_init(struct vm *vm)
 void vpmtmr_cleanup(struct vpmtmr *vpmtmr)
 {
 
-	free(vpmtmr, M_VPMTMR);
+	kfree(vpmtmr);
 }
 
 int

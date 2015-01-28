@@ -433,7 +433,8 @@ static void vpid_init(void)
 	 *
 	 * The remaining VPIDs are managed by the unit number allocator.
 	 */
-	vpid_unr = new_unrhdr(VM_MAXCPU + 1, 0xffff, NULL);
+  assert(0);
+  //	vpid_unr = new_unrhdr(VM_MAXCPU + 1, 0xffff, NULL);
 }
 
 static void vmx_disable(void *arg /*__unused*/)
@@ -791,7 +792,7 @@ static void *vmx_vminit(struct vm *vm, pmap_t pmap)
 	struct vmcs *vmcs;
 	uint32_t exc_bitmap;
 
-	vmx = malloc(sizeof(struct vmx), M_VMX, M_WAITOK | M_ZERO);
+	vmx = kzmalloc(sizeof(struct vmx), KERN_WAIT);
 	if ((uintptr_t) vmx & PAGE_MASK) {
 		panic("malloc of struct vmx not aligned on %d byte boundary",
 			  PAGE_SIZE);
@@ -2640,7 +2641,7 @@ static void vmx_vmcleanup(void *arg)
 	for (i = 0; i < VM_MAXCPU; i++)
 		vpid_free(vmx->state[i].vpid);
 
-	free(vmx, M_VMX);
+	kfree(vmx);
 
 	return;
 }
@@ -3283,7 +3284,7 @@ static struct vlapic *vmx_vlapic_init(void *arg, int vcpuid)
 
 	vmx = arg;
 
-	vlapic = malloc(sizeof(struct vlapic_vtx), M_VLAPIC, M_WAITOK | M_ZERO);
+	vlapic = kzmalloc(sizeof(struct vlapic_vtx), KERN_WAIT);
 	vlapic->vm = vmx->vm;
 	vlapic->vcpuid = vcpuid;
 	vlapic->apic_page = (struct LAPIC *)&vmx->apic_page[vcpuid];
@@ -3312,7 +3313,7 @@ static void vmx_vlapic_cleanup(void *arg, struct vlapic *vlapic)
 {
 
 	vlapic_cleanup(vlapic);
-	free(vlapic, M_VLAPIC);
+	kfree(vlapic);
 }
 
 struct vmm_ops vmm_ops_intel = {

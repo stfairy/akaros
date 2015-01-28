@@ -270,9 +270,9 @@ static void ppt_teardown_msix(struct pptdev *ppt)
 		ppt->msix.msix_table_rid = 0;
 	}
 
-	free(ppt->msix.res, M_PPTMSIX);
-	free(ppt->msix.cookie, M_PPTMSIX);
-	free(ppt->msix.arg, M_PPTMSIX);
+	kfree(ppt->msix.res);
+	kfree(ppt->msix.cookie);
+	kfree(ppt->msix.arg);
 
 	pci_release_msi(ppt->dev);
 
@@ -563,9 +563,9 @@ ppt_setup_msix(struct vm *vm, int vcpu, int bus, int slot, int func,
 		cookie_size = numvec * sizeof(ppt->msix.cookie[0]);
 		arg_size = numvec * sizeof(ppt->msix.arg[0]);
 
-		ppt->msix.res = malloc(res_size, M_PPTMSIX, M_WAITOK | M_ZERO);
-		ppt->msix.cookie = malloc(cookie_size, M_PPTMSIX, M_WAITOK | M_ZERO);
-		ppt->msix.arg = malloc(arg_size, M_PPTMSIX, M_WAITOK | M_ZERO);
+		ppt->msix.res = kzmalloc(res_size, KERN_WAIT);
+		ppt->msix.cookie = kzmalloc(cookie_size, KERN_WAIT);
+		ppt->msix.arg = kzmalloc(arg_size, KERN_WAIT);
 
 		rid = dinfo->cfg.msix.msix_table_bar;
 		ppt->msix.msix_table_res = bus_alloc_resource_any(ppt->dev,

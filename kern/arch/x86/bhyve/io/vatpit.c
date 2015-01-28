@@ -418,7 +418,7 @@ struct vatpit *vatpit_init(struct vm *vm)
 	struct vatpit_callout_arg *arg;
 	int i;
 
-	vatpit = malloc(sizeof(struct vatpit), M_VATPIT, M_WAITOK | M_ZERO);
+	vatpit = kzmalloc(sizeof(struct vatpit), KERN_WAIT);
 	vatpit->vm = vm;
 
 	mtx_init(&vatpit->mtx, "vatpit lock", NULL, MTX_SPIN);
@@ -443,5 +443,5 @@ void vatpit_cleanup(struct vatpit *vatpit)
 	for (i = 0; i < 3; i++)
 		callout_drain(&vatpit->channel[i].callout);
 
-	free(vatpit, M_VATPIT);
+	kfree(vatpit);
 }

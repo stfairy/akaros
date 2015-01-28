@@ -496,7 +496,7 @@ static void *svm_vminit(struct vm *vm, pmap_t pmap)
 	vm_paddr_t msrpm_pa, iopm_pa, pml4_pa;
 	int i;
 
-	svm_sc = malloc(sizeof(struct svm_softc), M_SVM, M_WAITOK | M_ZERO);
+	svm_sc = kzmalloc(sizeof(struct svm_softc), KERN_WAIT);
 	svm_sc->vm = vm;
 	svm_sc->nptp = (vm_offset_t) PADDR(pmap->pm_pml4);
 
@@ -1932,7 +1932,7 @@ static void svm_vmcleanup(void *arg)
 {
 	struct svm_softc *sc = arg;
 
-	free(sc, M_SVM);
+	kfree(sc);
 }
 
 static register_t *swctx_regptr(struct svm_regctx *regctx, int reg)
@@ -2091,7 +2091,7 @@ static struct vlapic *svm_vlapic_init(void *arg, int vcpuid)
 	struct vlapic *vlapic;
 
 	svm_sc = arg;
-	vlapic = malloc(sizeof(struct vlapic), M_SVM_VLAPIC, M_WAITOK | M_ZERO);
+	vlapic = kzmalloc(sizeof(struct vlapic), KERN_WAIT);
 	vlapic->vm = svm_sc->vm;
 	vlapic->vcpuid = vcpuid;
 	vlapic->apic_page = (struct LAPIC *)&svm_sc->apic_page[vcpuid];
@@ -2105,7 +2105,7 @@ static void svm_vlapic_cleanup(void *arg, struct vlapic *vlapic)
 {
 
 	vlapic_cleanup(vlapic);
-	free(vlapic, M_SVM_VLAPIC);
+	kfree(vlapic);
 }
 
 struct vmm_ops vmm_ops_amd = {
