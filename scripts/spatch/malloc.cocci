@@ -13,7 +13,7 @@ expression E1;
 @@
 
 - smalloc(E1
-+ kzmalloc(E1, KERN_WAIT
++ kzmalloc(E1, KMALLOC_WAIT
    )
 
 @ rulem @
@@ -31,7 +31,7 @@ expression E1;
 @@
 
 - malloc(E1
-+ kzmalloc(E1, KERN_WAIT
++ kzmalloc(E1, KMALLOC_WAIT
    )
 
 @@
