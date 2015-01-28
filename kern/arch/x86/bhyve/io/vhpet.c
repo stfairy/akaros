@@ -688,7 +688,7 @@ struct vhpet *vhpet_init(struct vm *vm)
 	struct vhpet_callout_arg *arg;
 	struct bintime bt;
 
-	vhpet = kzmalloc(sizeof(struct vhpet), KERN_WAIT);
+	vhpet = kzmalloc(sizeof(struct vhpet), KMALLOC_WAIT);
 	vhpet->vm = vm;
 	mtx_init(&vhpet->mtx, "vhpet lock", NULL, MTX_DEF);
 

@@ -402,7 +402,7 @@ int vm_create(const char *name, struct vm **retvm)
 	if (vmspace == NULL)
 		return (ENOMEM);
 
-	vm = kzmalloc(sizeof(struct vm), KERN_WAIT);
+	vm = kzmalloc(sizeof(struct vm), KMALLOC_WAIT);
 	strcpy(vm->name, name);
 	vm->num_mem_segs = 0;
 	vm->vmspace = vmspace;

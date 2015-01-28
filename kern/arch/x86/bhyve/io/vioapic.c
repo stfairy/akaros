@@ -458,7 +458,7 @@ struct vioapic *vioapic_init(struct vm *vm)
 	int i;
 	struct vioapic *vioapic;
 
-	vioapic = kzmalloc(sizeof(struct vioapic), KERN_WAIT);
+	vioapic = kzmalloc(sizeof(struct vioapic), KMALLOC_WAIT);
 
 	vioapic->vm = vm;
 	mtx_init(&vioapic->mtx, "vioapic lock", NULL, MTX_SPIN);

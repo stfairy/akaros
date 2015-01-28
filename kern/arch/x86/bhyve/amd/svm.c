@@ -496,7 +496,7 @@ static void *svm_vminit(struct vm *vm, pmap_t pmap)
 	vm_paddr_t msrpm_pa, iopm_pa, pml4_pa;
 	int i;
 
-	svm_sc = kzmalloc(sizeof(struct svm_softc), KERN_WAIT);
+	svm_sc = kzmalloc(sizeof(struct svm_softc), KMALLOC_WAIT);
 	svm_sc->vm = vm;
 	svm_sc->nptp = (vm_offset_t) PADDR(pmap->pm_pml4);
 
@@ -2091,7 +2091,7 @@ static struct vlapic *svm_vlapic_init(void *arg, int vcpuid)
 	struct vlapic *vlapic;
 
 	svm_sc = arg;
-	vlapic = kzmalloc(sizeof(struct vlapic), KERN_WAIT);
+	vlapic = kzmalloc(sizeof(struct vlapic), KMALLOC_WAIT);
 	vlapic->vm = svm_sc->vm;
 	vlapic->vcpuid = vcpuid;
 	vlapic->apic_page = (struct LAPIC *)&svm_sc->apic_page[vcpuid];

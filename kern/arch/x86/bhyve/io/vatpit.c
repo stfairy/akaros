@@ -418,7 +418,7 @@ struct vatpit *vatpit_init(struct vm *vm)
 	struct vatpit_callout_arg *arg;
 	int i;
 
-	vatpit = kzmalloc(sizeof(struct vatpit), KERN_WAIT);
+	vatpit = kzmalloc(sizeof(struct vatpit), KMALLOC_WAIT);
 	vatpit->vm = vm;
 
 	mtx_init(&vatpit->mtx, "vatpit lock", NULL, MTX_SPIN);

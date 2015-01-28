@@ -481,7 +481,7 @@ vtd_update_mapping(void *arg, vm_paddr_t gpa, vm_paddr_t hpa, uint64_t len,
 		 * to it from the current page table.
 		 */
 		if (ptp[ptpindex] == 0) {
-			void *nlp = kzmalloc(PAGE_SIZE, KERN_WAIT);
+			void *nlp = kzmalloc(PAGE_SIZE, KMALLOC_WAIT);
 			ptp[ptpindex] = PADDR(nlp) | VTD_PTE_RD | VTD_PTE_WR;
 		}
 
@@ -586,12 +586,12 @@ static void *vtd_create_domain(vm_paddr_t maxaddr)
 			  VTD_CAP_SAGAW(vtdmap->cap), agaw);
 	}
 
-	dom = kzmalloc(sizeof(struct domain), KERN_WAIT);
+	dom = kzmalloc(sizeof(struct domain), KMALLOC_WAIT);
 	dom->pt_levels = pt_levels;
 	dom->addrwidth = addrwidth;
 	dom->id = domain_id();
 	dom->maxaddr = maxaddr;
-	dom->ptp = kzmalloc(PAGE_SIZE, KERN_WAIT);
+	dom->ptp = kzmalloc(PAGE_SIZE, KMALLOC_WAIT);
 	if ((uintptr_t) dom->ptp & PAGE_MASK)
 		panic("vtd_create_domain: ptp (%p) not page aligned", dom->ptp);
 

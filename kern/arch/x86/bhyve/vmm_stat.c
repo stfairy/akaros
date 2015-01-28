@@ -106,7 +106,7 @@ int vmm_stat_copy(struct vm *vm, int vcpu, int *num_stats, uint64_t * buf)
 void *vmm_stat_alloc(void)
 {
 
-	return (kzmalloc(vst_size, KERN_WAIT));
+	return (kzmalloc(vst_size, KMALLOC_WAIT));
 }
 
 void vmm_stat_init(void *vp)

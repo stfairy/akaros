@@ -30,6 +30,7 @@
 #include <error.h>
 #include <pmap.h>
 #include <smp.h>
+#include <kmalloc.h>
 #include "../vmm_lapic.h"
 #include "../vmm_host.h"
 #include "../vmm_ioport.h"
@@ -792,7 +793,7 @@ static void *vmx_vminit(struct vm *vm, pmap_t pmap)
 	struct vmcs *vmcs;
 	uint32_t exc_bitmap;
 
-	vmx = kzmalloc(sizeof(struct vmx), KERN_WAIT);
+	vmx = kzmalloc(sizeof(struct vmx), KMALLOC_WAIT);
 	if ((uintptr_t) vmx & PAGE_MASK) {
 		panic("malloc of struct vmx not aligned on %d byte boundary",
 			  PAGE_SIZE);
@@ -3284,7 +3285,7 @@ static struct vlapic *vmx_vlapic_init(void *arg, int vcpuid)
 
 	vmx = arg;
 
-	vlapic = kzmalloc(sizeof(struct vlapic_vtx), KERN_WAIT);
+	vlapic = kzmalloc(sizeof(struct vlapic_vtx), KMALLOC_WAIT);
 	vlapic->vm = vmx->vm;
 	vlapic->vcpuid = vcpuid;
 	vlapic->apic_page = (struct LAPIC *)&vmx->apic_page[vcpuid];

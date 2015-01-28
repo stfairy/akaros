@@ -457,7 +457,7 @@ vmmdev_ioctl(struct cdev *cdev, unsigned long cmd, caddr_t data, int fflag,
 				error = ERANGE;
 				break;
 			}
-			cpuset = kzmalloc(size, KERN_WAIT);
+			cpuset = kzmalloc(size, KMALLOC_WAIT);
 			if (vm_cpuset->which == VM_ACTIVE_CPUS)
 				*cpuset = vm_active_cpus(sc->vm);
 			else if (vm_cpuset->which == VM_SUSPENDED_CPUS)
@@ -624,7 +624,7 @@ static int sysctl_vmm_create(SYSCTL_HANDLER_ARGS)
 	if (error != 0)
 		return (error);
 
-	sc = kzmalloc(sizeof(struct vmmdev_softc), KERN_WAIT);
+	sc = kzmalloc(sizeof(struct vmmdev_softc), KMALLOC_WAIT);
 	sc->vm = vm;
 
 	/*
