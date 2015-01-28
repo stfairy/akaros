@@ -792,6 +792,7 @@ static void *vmx_vminit(struct vm *vm, pmap_t pmap)
 	struct vmx *vmx;
 	struct vmcs *vmcs;
 	uint32_t exc_bitmap;
+	int8_t irq_status = irq_is_enabled();
 
 	vmx = kzmalloc(sizeof(struct vmx), KMALLOC_WAIT);
 	if ((uintptr_t) vmx & PAGE_MASK) {
@@ -869,7 +870,7 @@ static void *vmx_vminit(struct vm *vm, pmap_t pmap)
 		error = vmcs_init(vmcs);
 		KASSERT(error == 0, ("vmcs_init error %d", error));
 
-		VMPTRLD(vmcs);
+		VMPTRLD(&irq_status, vmcs);
 		error = 0;
 		error += vmwrite(VMCS_HOST_RSP, (unsigned long) & vmx->ctx[i]);
 		error += vmwrite(VMCS_EPTP, vmx->eptp);
@@ -902,7 +903,7 @@ static void *vmx_vminit(struct vm *vm, pmap_t pmap)
 			error += vmwrite(VMCS_PIR_DESC,
 					 PADDR(&vmx->pir_desc[i]));
 		}
-		VMCLEAR(vmcs);
+		VMCLEAR(&irq_status, vmcs);
 		KASSERT(error == 0, ("vmx_vminit: error customizing the vmcs"));
 
 		vmx->cap[i].set = 0;
@@ -2504,6 +2505,7 @@ vmx_run(void *arg, int vcpu, register_t rip, pmap_t pmap,
 	struct vm_exit *vmexit;
 	struct vlapic *vlapic;
 	uint32_t exit_reason;
+	int8_t irq_status = irq_is_enabled();
 
 	vmx = arg;
 	vm = vmx->vm;
@@ -2518,7 +2520,7 @@ vmx_run(void *arg, int vcpu, register_t rip, pmap_t pmap,
 
 	vmx_msr_guest_enter(vmx, vcpu);
 
-	VMPTRLD(vmcs);
+	VMPTRLD(&irq_status, vmcs);
 
 	/*
 	 * XXX
@@ -2625,7 +2627,7 @@ vmx_run(void *arg, int vcpu, register_t rip, pmap_t pmap,
 	VCPU_CTR1(vm, vcpu, "returning from vmx_run: exitcode %d",
 			  vmexit->exitcode);
 
-	VMCLEAR(vmcs);
+	VMCLEAR(&irq_status, vmcs);
 	vmx_msr_guest_exit(vmx, vcpu);
 
 	return (0);
@@ -2986,9 +2988,9 @@ static int vmx_setcap(void *arg, int vcpu, int type, int val)
 		} else {
 			baseval &= ~flag;
 		}
-		VMPTRLD(vmcs);
+		VMPTRLD(&irq_status, vmcs);
 		error = vmwrite(reg, baseval);
-		VMCLEAR(vmcs);
+		VMCLEAR(&irq_status, vmcs);
 
 		if (error) {
 			retval = error;
@@ -3117,6 +3119,7 @@ static void vmx_set_tmr(struct vlapic *vlapic, int vector, bool level)
 	struct vmx *vmx;
 	struct vmcs *vmcs;
 	uint64_t mask, val;
+	int8_t irq_status = irq_is_enabled();
 
 	KASSERT(vector >= 0 && vector <= 255, ("invalid vector %d", vector));
 	KASSERT(!vcpu_is_running(vlapic->vm, vlapic->vcpuid, NULL),
@@ -3127,14 +3130,14 @@ static void vmx_set_tmr(struct vlapic *vlapic, int vector, bool level)
 	vmcs = &vmx->vmcs[vlapic->vcpuid];
 	mask = 1UL << (vector % 64);
 
-	VMPTRLD(vmcs);
+	VMPTRLD(&irq_status, vmcs);
 	val = vmcs_read(VMCS_EOI_EXIT(vector));
 	if (level)
 		val |= mask;
 	else
 		val &= ~mask;
 	vmcs_write(VMCS_EOI_EXIT(vector), val);
-	VMCLEAR(vmcs);
+	VMCLEAR(&irq_status, vmcs);
 }
 
 static void vmx_enable_x2apic_mode(struct vlapic *vlapic)
@@ -3143,6 +3146,7 @@ static void vmx_enable_x2apic_mode(struct vlapic *vlapic)
 	struct vmcs *vmcs;
 	uint32_t proc_ctls2;
 	int vcpuid, error;
+	int8_t irq_status = irq_is_enabled();
 
 	vcpuid = vlapic->vcpuid;
 	vmx = ((struct vlapic_vtx *)vlapic)->vmx;
@@ -3156,9 +3160,9 @@ static void vmx_enable_x2apic_mode(struct vlapic *vlapic)
 	proc_ctls2 |= PROCBASED2_VIRTUALIZE_X2APIC_MODE;
 	vmx->cap[vcpuid].proc_ctls2 = proc_ctls2;
 
-	VMPTRLD(vmcs);
+	VMPTRLD(&irq_status, vmcs);
 	vmcs_write(VMCS_SEC_PROC_BASED_CTLS, proc_ctls2);
-	VMCLEAR(vmcs);
+	VMCLEAR(&irq_status, vmcs);
 
 	if (vlapic->vcpuid == 0) {
 		/*

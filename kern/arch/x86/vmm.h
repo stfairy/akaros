@@ -55,6 +55,7 @@ typedef uint64_t cpuset_t;
 #define VMM_STAT(a,b,x,y) int x
 #define TUNABLE_INT_FETCH(x,y) assert(0)
 #define KASSERT(x,y) assert(0); /*if (! x) {printk y ; assert(0); }*/
+#define smp_rendezvous(a,b,c,d) panic("smp_rendezvous")
 
 #define bootverbose 1
 // TODO: make this work even out of a function.
