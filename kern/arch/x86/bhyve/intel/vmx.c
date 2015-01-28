@@ -455,7 +455,7 @@ static void vmx_disable(void *arg /*__unused*/)
 		invept(INVEPT_TYPE_ALL_CONTEXTS, invept_desc);
 		vmxoff();
 	}
-	load_cr4(rcr4() & ~CR4_VMXE);
+	lcr4(rcr4() & ~CR4_VMXE);
 }
 
 static int vmx_cleanup(void)
@@ -480,14 +480,14 @@ static void vmx_enable(void *arg /*__unused*/)
 	uint64_t feature_control;
 
 	feature_control = read_msr(MSR_IA32_FEATURE_CONTROL);
-	if ((feature_control & IA32_FEATURE_CONTROL_LOCK) == 0 ||
-		(feature_control & IA32_FEATURE_CONTROL_VMX_EN) == 0) {
+	if ((feature_control & FEATURE_CONTROL_LOCKED) == 0 ||
+		(feature_control & FEATURE_CONTROL_VMXON_ENABLED_OUTSIDE_SMX) == 0) {
 		write_msr(MSR_IA32_FEATURE_CONTROL,
-			  feature_control | IA32_FEATURE_CONTROL_VMX_EN |
-			  IA32_FEATURE_CONTROL_LOCK);
+			  feature_control | FEATURE_CONTROL_VMXON_ENABLED_OUTSIDE_SMX |
+			  FEATURE_CONTROL_LOCKED);
 	}
 
-	load_cr4(rcr4() | CR4_VMXE);
+	lcr4(rcr4() | CR4_VMXE);
 
 	*(uint32_t *) vmxon_region[hw_core_id()] = vmx_revision();
 	error = vmxon(vmxon_region[hw_core_id()]);
@@ -519,8 +519,8 @@ static int vmx_init(int ipinum)
 	 * are set (bits 0 and 2 respectively).
 	 */
 	feature_control = read_msr(MSR_IA32_FEATURE_CONTROL);
-	if ((feature_control & IA32_FEATURE_CONTROL_LOCK) == 1 &&
-		(feature_control & IA32_FEATURE_CONTROL_VMX_EN) == 0) {
+	if ((feature_control & FEATURE_CONTROL_LOCKED) == 1 &&
+		(feature_control & FEATURE_CONTROL_VMXON_ENABLED_OUTSIDE_SMX) == 0) {
 		printf("vmx_init: VMX operation disabled by BIOS\n");
 		return (ENXIO);
 	}
