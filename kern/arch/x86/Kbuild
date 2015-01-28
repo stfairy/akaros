@@ -31,10 +31,5 @@ obj-y						+= trap.o trap$(BITS).o
 obj-y						+= trapentry$(BITS).o
 obj-y						+= usb.o
 
-# Virtual machine support. Optional.
-obj-$(CONFIG_VM)				+= emulate.o
-obj-$(CONFIG_VM)				+= vmx.o
-obj-$(CONFIG_VM)				+= vmx_mmu.o
-
 # bhyve support: rather experimental.
 obj-$(CONFIG_BHYVE)				+= bhyve/

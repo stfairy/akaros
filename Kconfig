@@ -232,12 +232,6 @@ config BLOCK_EXTRAS
 
 endmenu
 
-config VM
-	bool "Virtual Machine support"
-	default n
-	help
-		VM support -- not working! Based on KVM.
-
 config BHYVE
 	bool "bhyve support"
 	default n
