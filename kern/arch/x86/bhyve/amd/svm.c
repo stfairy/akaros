@@ -1253,9 +1253,9 @@ svm_vmexit(struct svm_softc *svm_sc, int vcpu, struct vm_exit *vmexit)
 					info1 = 0;
 					break;
 
-				case IDT_BP:
-				case IDT_OF:
-				case IDT_BR:
+				case T_BRKPT:
+				case T_OFLOW:
+				case T_BOUND:
 					/*
 					 * The 'nrip' field is populated for INT3, INTO and
 					 * BOUND exceptions and this also implies that

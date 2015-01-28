@@ -508,11 +508,16 @@ static int vmx_init(int ipinum)
 	uint64_t basic, fixed0, fixed1, feature_control;
 	uint32_t tmp, procbased2_vid_bits;
 
+// This check is pointless. Nothing we run on will lack this feature.
+// And, if it lacks it, the MSR reads below will fail anyway. Skipping this
+// bit saves setting up the hacky global.
+#ifdef CHECK_CPUID_FEATURE2
 	/* CPUID.1:ECX[bit 5] must be 1 for processor to support VMX */
 	if (!(cpu_feature2 & CPUID2_VMX)) {
 		printf("vmx_init: processor does not support VMX operation\n");
 		return (ENXIO);
 	}
+#endif
 
 	/*
 	 * Verify that MSR_IA32_FEATURE_CONTROL lock and VMXON enable bits
@@ -727,6 +732,8 @@ static int vmx_init(int ipinum)
 
 static void vmx_trigger_hostintr(int vector)
 {
+	panic("Tried to trigger a host interrupt and we don't do that yet");
+#if 0
 	uintptr_t func;
 	struct gate_descriptor *gd;
 
@@ -751,6 +758,7 @@ static void vmx_trigger_hostintr(int vector)
 
 	func = ((long)gd->gd_hioffset << 16 | gd->gd_looffset);
 	vmx_call_isr(func);
+#endif
 }
 
 static int vmx_setup_cr_shadow(int which, struct vmcs *vmcs, uint32_t initial)
@@ -1162,7 +1170,7 @@ vmx_inject_interrupts(struct vmx *vmx, int vcpu, struct vlapic *vlapic,
 
 		info = entryinfo;
 		vector = info & 0xff;
-		if (vector == IDT_BP || vector == IDT_OF) {
+		if (vector == T_BRKPT || vector == T_OFLOW) {
 			/*
 			 * VT-x requires #BP and #OF to be injected as software
 			 * exceptions.
