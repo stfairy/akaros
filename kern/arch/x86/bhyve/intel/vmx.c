@@ -3125,7 +3125,7 @@ static int vmx_pending_intr(struct vlapic *vlapic, int *vecptr)
 	for (i = 3; i >= 0; i--) {
 		pirval = pir_desc->pir[i];
 		if (pirval != 0) {
-			vpr = (i * 64 + flsl(pirval) - 1) & 0xf0;
+			vpr = (i * 64 + fls64(pirval) - 1) & 0xf0;
 			return (vpr > ppr);
 		}
 	}
@@ -3294,7 +3294,7 @@ static void vmx_inject_pir(struct vlapic *vlapic)
 	 *   pending bit set, PIR 0
 	 */
 	if (pirval != 0) {
-		rvi = pirbase + flsl(pirval) - 1;
+		rvi = pirbase + fls64(pirval) - 1;
 		intr_status_old = vmcs_read(VMCS_GUEST_INTR_STATUS);
 		intr_status_new = (intr_status_old & 0xFF00) | rvi;
 		if (intr_status_new > intr_status_old) {
