@@ -355,7 +355,8 @@ vmx_rdmsr(struct vmx *vmx, int vcpuid, unsigned int num, uint64_t * val,
 			*val = platform_info;
 			break;
 		case MSR_NHM_TURBO_RATIO_LIMIT:
-		case MSR_NHM_TURBO_RATIO_LIMIT1:
+		// TODO: AKAROS: FIND THIS.
+		//case MSR_NHM_TURBO_RATIO_LIMIT1:
 			*val = turbo_ratio_limit;
 			break;
 		default:
