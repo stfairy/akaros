@@ -515,7 +515,7 @@ static int vmx_init(int ipinum)
 #ifdef CHECK_CPUID_FEATURE2
 	/* CPUID.1:ECX[bit 5] must be 1 for processor to support VMX */
 	if (!(cpu_feature2 & CPUID2_VMX)) {
-		printf("vmx_init: processor does not support VMX operation\n");
+		printk("vmx_init: processor does not support VMX operation\n");
 		return (ENXIO);
 	}
 #endif
@@ -527,7 +527,7 @@ static int vmx_init(int ipinum)
 	feature_control = read_msr(MSR_IA32_FEATURE_CONTROL);
 	if ((feature_control & FEATURE_CONTROL_LOCKED) == 1 &&
 		(feature_control & FEATURE_CONTROL_VMXON_ENABLED_OUTSIDE_SMX) == 0) {
-		printf("vmx_init: VMX operation disabled by BIOS\n");
+		printk("vmx_init: VMX operation disabled by BIOS\n");
 		return (ENXIO);
 	}
 
@@ -537,7 +537,7 @@ static int vmx_init(int ipinum)
 	 */
 	basic = read_msr(MSR_IA32_VMX_BASIC);
 	if ((basic & (1UL << 54)) == 0) {
-		printf("vmx_init: processor does not support desired basic "
+		printk("vmx_init: processor does not support desired basic "
 			   "capabilities\n");
 		return (EINVAL);
 	}
@@ -548,7 +548,7 @@ static int vmx_init(int ipinum)
 						   PROCBASED_CTLS_ONE_SETTING,
 						   PROCBASED_CTLS_ZERO_SETTING, &procbased_ctls);
 	if (error) {
-		printf("vmx_init: processor does not support desired primary "
+		printk("vmx_init: processor does not support desired primary "
 			   "processor-based controls\n");
 		return (error);
 	}
@@ -562,7 +562,7 @@ static int vmx_init(int ipinum)
 						   PROCBASED_CTLS2_ONE_SETTING,
 						   PROCBASED_CTLS2_ZERO_SETTING, &procbased_ctls2);
 	if (error) {
-		printf("vmx_init: processor does not support desired secondary "
+		printk("vmx_init: processor does not support desired secondary "
 			   "processor-based controls\n");
 		return (error);
 	}
@@ -579,7 +579,7 @@ static int vmx_init(int ipinum)
 						   PINBASED_CTLS_ONE_SETTING,
 						   PINBASED_CTLS_ZERO_SETTING, &pinbased_ctls);
 	if (error) {
-		printf("vmx_init: processor does not support desired "
+		printk("vmx_init: processor does not support desired "
 			   "pin-based controls\n");
 		return (error);
 	}
@@ -589,7 +589,7 @@ static int vmx_init(int ipinum)
 						   VM_EXIT_CTLS_ONE_SETTING,
 						   VM_EXIT_CTLS_ZERO_SETTING, &exit_ctls);
 	if (error) {
-		printf("vmx_init: processor does not support desired "
+		printk("vmx_init: processor does not support desired "
 			   "exit controls\n");
 		return (error);
 	}
@@ -599,7 +599,7 @@ static int vmx_init(int ipinum)
 						   VM_ENTRY_CTLS_ONE_SETTING,
 						   VM_ENTRY_CTLS_ZERO_SETTING, &entry_ctls);
 	if (error) {
-		printf("vmx_init: processor does not support desired "
+		printk("vmx_init: processor does not support desired "
 			   "entry controls\n");
 		return (error);
 	}
@@ -673,7 +673,7 @@ static int vmx_init(int ipinum)
 			pirvec = vmm_ipi_alloc();
 			if (pirvec == 0) {
 				if (bootverbose) {
-					printf("vmx_init: unable to allocate "
+					printk("vmx_init: unable to allocate "
 						   "posted interrupt vector\n");
 				}
 			} else {
@@ -690,7 +690,7 @@ static int vmx_init(int ipinum)
 	/* Initialize EPT */
 	error = ept_init(ipinum);
 	if (error) {
-		printf("vmx_init: ept initialization failed (%d)\n", error);
+		printk("vmx_init: ept initialization failed (%d)\n", error);
 		return (error);
 	}
 

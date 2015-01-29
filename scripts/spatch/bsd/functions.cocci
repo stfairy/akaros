@@ -41,3 +41,9 @@ E
 + fls64(
  ...)
 
+@ print@
+@@
+-printf(
++printk(
+...)
+

@@ -456,10 +456,10 @@ static void dump_isrvec_stk(struct vlapic *vlapic)
 
 	isrptr = &vlapic->apic_page->isr0;
 	for (i = 0; i < 8; i++)
-		printf("ISR%d 0x%08x\n", i, isrptr[i * 4]);
+		printk("ISR%d 0x%08x\n", i, isrptr[i * 4]);
 
 	for (i = 0; i <= vlapic->isrvec_stk_top; i++)
-		printf("isrvec_stk[%d] = %d\n", i, vlapic->isrvec_stk[i]);
+		printk("isrvec_stk[%d] = %d\n", i, vlapic->isrvec_stk[i]);
 }
 #endif
 

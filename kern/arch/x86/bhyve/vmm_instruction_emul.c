@@ -1838,7 +1838,7 @@ static int verify_gla(struct vm *vm, int cpuid, uint64_t gla, struct vie *vie)
 	if (vie->base_register != VM_REG_LAST) {
 		error = vm_get_register(vm, cpuid, vie->base_register, &base);
 		if (error) {
-			printf("verify_gla: error %d getting base reg %d\n",
+			printk("verify_gla: error %d getting base reg %d\n",
 				   error, vie->base_register);
 			return (-1);
 		}
@@ -1855,7 +1855,7 @@ static int verify_gla(struct vm *vm, int cpuid, uint64_t gla, struct vie *vie)
 	if (vie->index_register != VM_REG_LAST) {
 		error = vm_get_register(vm, cpuid, vie->index_register, &idx);
 		if (error) {
-			printf("verify_gla: error %d getting index reg %d\n",
+			printk("verify_gla: error %d getting index reg %d\n",
 				   error, vie->index_register);
 			return (-1);
 		}
@@ -1865,7 +1865,7 @@ static int verify_gla(struct vm *vm, int cpuid, uint64_t gla, struct vie *vie)
 	gla2 = base + vie->scale * idx + vie->displacement;
 	gla2 &= size2mask[vie->addrsize];
 	if (gla != gla2) {
-		printf("verify_gla mismatch: "
+		printk("verify_gla mismatch: "
 			   "base(0x%0lx), scale(%d), index(0x%0lx), "
 			   "disp(0x%0lx), gla(0x%0lx), gla2(0x%0lx)\n",
 			   base, vie->scale, idx, vie->displacement, gla, gla2);
