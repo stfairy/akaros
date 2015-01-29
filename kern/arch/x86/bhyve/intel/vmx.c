@@ -825,7 +825,7 @@ static void *vmx_vminit(struct vm *vm, struct proc *p)
 	msr_bitmap_initialize(vmx->msr_bitmap);
 
 	/*
-	 * It is safe to allow direct access to MSR_GSBASE and MSR_FSBASE.
+	 * It is safe to allow direct access to MSR_GS_BASE and MSR_FS_BASE.
 	 * The guest FSBASE and GSBASE are saved and restored during
 	 * vm-exit and vm-entry respectively. The host FSBASE and GSBASE are
 	 * always restored from the vmcs host state area on vm-exit.
@@ -847,8 +847,8 @@ static void *vmx_vminit(struct vm *vm, struct proc *p)
 	 * XXX Writes would be implemented with a wrmsr trap, and
 	 * then modifying the TSC offset in the VMCS.
 	 */
-	if (guest_msr_rw(vmx, MSR_GSBASE) ||
-		guest_msr_rw(vmx, MSR_FSBASE) ||
+	if (guest_msr_rw(vmx, MSR_GS_BASE) ||
+		guest_msr_rw(vmx, MSR_FS_BASE) ||
 		guest_msr_rw(vmx, MSR_SYSENTER_CS_MSR) ||
 		guest_msr_rw(vmx, MSR_SYSENTER_ESP_MSR) ||
 		guest_msr_rw(vmx, MSR_SYSENTER_EIP_MSR) ||

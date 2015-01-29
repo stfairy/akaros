@@ -26,3 +26,4 @@ sed -i 's/IDT_BR/T_BOUND/g' $*
 
 sed -i 's/MSR_GSBASE/MSR_GS_BASE/g' $*
 sed -i 's/MSR_FSBASE/MSR_FS_BASE/g' $*
+sed -i 's/MSR_KGSBASE/MSR_KERNEL_GS_BASE/g' $*

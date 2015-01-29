@@ -510,9 +510,9 @@ static void *svm_vminit(struct vm *vm, pmap_t pmap)
 	 * guest is executing. Therefore it is safe to allow the guest to
 	 * read/write these MSRs directly without hypervisor involvement.
 	 */
-	svm_msr_rw_ok(svm_sc->msr_bitmap, MSR_GSBASE);
-	svm_msr_rw_ok(svm_sc->msr_bitmap, MSR_FSBASE);
-	svm_msr_rw_ok(svm_sc->msr_bitmap, MSR_KGSBASE);
+	svm_msr_rw_ok(svm_sc->msr_bitmap, MSR_GS_BASE);
+	svm_msr_rw_ok(svm_sc->msr_bitmap, MSR_FS_BASE);
+	svm_msr_rw_ok(svm_sc->msr_bitmap, MSR_KERNEL_GS_BASE);
 
 	svm_msr_rw_ok(svm_sc->msr_bitmap, MSR_STAR);
 	svm_msr_rw_ok(svm_sc->msr_bitmap, MSR_LSTAR);
@@ -1802,7 +1802,7 @@ svm_vmrun(void *arg, int vcpu, register_t rip, pmap_t pmap,
 	/*
 	 * Stash 'hw_core_id()' on the stack as 'thiscpu'.
 	 *
-	 * The per-cpu data area is not accessible until MSR_GSBASE is restored
+	 * The per-cpu data area is not accessible until MSR_GS_BASE is restored
 	 * after the #VMEXIT. Since VMRUN is executed inside a critical section
 	 * 'hw_core_id()' and 'thiscpu' are guaranteed to identical.
 	 */
@@ -1892,16 +1892,16 @@ svm_vmrun(void *arg, int vcpu, register_t rip, pmap_t pmap,
 		CPU_CLR_ATOMIC(thiscpu, &pmap->pm_active);
 
 		/*
-		 * Restore MSR_GSBASE to point to the pcpu data area.
+		 * Restore MSR_GS_BASE to point to the pcpu data area.
 		 *
 		 * Note that accesses done via PCPU_GET/PCPU_SET will work
-		 * only after MSR_GSBASE is restored.
+		 * only after MSR_GS_BASE is restored.
 		 *
-		 * Also note that we don't bother restoring MSR_KGSBASE
+		 * Also note that we don't bother restoring MSR_KERNEL_GS_BASE
 		 * since it is not used in the kernel and will be restored
 		 * when the VMRUN ioctl returns to userspace.
 		 */
-		write_msr(MSR_GSBASE, (uint64_t) & __pcpu[thiscpu]);
+		write_msr(MSR_GS_BASE, (uint64_t) & __pcpu[thiscpu]);
 		KASSERT(hw_core_id() == thiscpu,
 				("thiscpu/hw_core_id() (%u/%u) mismatch", thiscpu,
 				 hw_core_id()));

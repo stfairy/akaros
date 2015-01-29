@@ -301,7 +301,7 @@ void vmx_msr_guest_init(struct vmx *vmx, int vcpuid)
 		guest_msr_rw(vmx, MSR_CSTAR);
 		guest_msr_rw(vmx, MSR_STAR);
 		guest_msr_rw(vmx, MSR_SF_MASK);
-		guest_msr_rw(vmx, MSR_KGSBASE);
+		guest_msr_rw(vmx, MSR_KERNEL_GS_BASE);
 	}
 	return;
 }
@@ -315,7 +315,7 @@ void vmx_msr_guest_enter(struct vmx *vmx, int vcpuid)
 	write_msr(MSR_CSTAR, guest_msrs[IDX_MSR_CSTAR]);
 	write_msr(MSR_STAR, guest_msrs[IDX_MSR_STAR]);
 	write_msr(MSR_SF_MASK, guest_msrs[IDX_MSR_SF_MASK]);
-	write_msr(MSR_KGSBASE, guest_msrs[IDX_MSR_KGSBASE]);
+	write_msr(MSR_KERNEL_GS_BASE, guest_msrs[IDX_MSR_KERNEL_GS_BASE]);
 }
 
 void vmx_msr_guest_exit(struct vmx *vmx, int vcpuid)
@@ -327,7 +327,7 @@ void vmx_msr_guest_exit(struct vmx *vmx, int vcpuid)
 	guest_msrs[IDX_MSR_CSTAR] = read_msr(MSR_CSTAR);
 	guest_msrs[IDX_MSR_STAR] = read_msr(MSR_STAR);
 	guest_msrs[IDX_MSR_SF_MASK] = read_msr(MSR_SF_MASK);
-	guest_msrs[IDX_MSR_KGSBASE] = read_msr(MSR_KGSBASE);
+	guest_msrs[IDX_MSR_KERNEL_GS_BASE] = read_msr(MSR_KERNEL_GS_BASE);
 
 	/* Restore host MSRs */
 	write_msr(MSR_LSTAR, host_msrs[IDX_MSR_LSTAR]);
@@ -335,7 +335,7 @@ void vmx_msr_guest_exit(struct vmx *vmx, int vcpuid)
 	write_msr(MSR_STAR, host_msrs[IDX_MSR_STAR]);
 	write_msr(MSR_SF_MASK, host_msrs[IDX_MSR_SF_MASK]);
 
-	/* MSR_KGSBASE will be restored on the way back to userspace */
+	/* MSR_KERNEL_GS_BASE will be restored on the way back to userspace */
 }
 
 int

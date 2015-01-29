@@ -104,7 +104,7 @@ enum {
 	IDX_MSR_CSTAR,
 	IDX_MSR_STAR,
 	IDX_MSR_SF_MASK,
-	IDX_MSR_KGSBASE,
+	IDX_MSR_KERNEL_GS_BASE,
 	GUEST_MSR_NUM				/* must be the last enumeration */
 };
 

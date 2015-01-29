@@ -66,7 +66,7 @@ void svm_msr_guest_init(struct svm_softc *sc, int vcpu)
 	/*
 	 * All the MSRs accessible to the guest are either saved/restored by
 	 * hardware on every #VMEXIT/VMRUN (e.g., G_PAT) or are saved/restored
-	 * by VMSAVE/VMLOAD (e.g., MSR_GSBASE).
+	 * by VMSAVE/VMLOAD (e.g., MSR_GS_BASE).
 	 *
 	 * There are no guest MSRs that are saved/restored "by hand" so nothing
 	 * more to do here.
@@ -91,7 +91,7 @@ void svm_msr_guest_exit(struct svm_softc *sc, int vcpu)
 	write_msr(MSR_STAR, host_msrs[IDX_MSR_STAR]);
 	write_msr(MSR_SF_MASK, host_msrs[IDX_MSR_SF_MASK]);
 
-	/* MSR_KGSBASE will be restored on the way back to userspace */
+	/* MSR_KERNEL_GS_BASE will be restored on the way back to userspace */
 }
 
 int
