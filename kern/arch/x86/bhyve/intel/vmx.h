@@ -92,8 +92,8 @@ static_assert(sizeof(struct apic_page) == PAGE_SIZE);
 
 /* Posted Interrupt Descriptor (described in section 29.6 of the Intel SDM) */
 struct pir_desc {
-	uint64_t pir[4];
-	uint64_t pending;
+	atomic_t pir[4];
+	atomic_t pending;
 	uint64_t unused[3];
 } __attribute__ ((aligned(64)));
 static_assert(sizeof(struct pir_desc) == 64);

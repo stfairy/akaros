@@ -3090,7 +3090,8 @@ static int vmx_pending_intr(struct vlapic *vlapic, int *vecptr)
 	struct vlapic_vtx *vlapic_vtx;
 	struct pir_desc *pir_desc;
 	struct LAPIC *lapic;
-	uint64_t pending, pirval;
+	uint64_t pending;
+	atomic_t pirval;
 	uint32_t ppr, vpr;
 	int i;
 

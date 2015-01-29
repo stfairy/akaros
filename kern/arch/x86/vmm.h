@@ -67,7 +67,7 @@ typedef uint64_t cpuset_t;
 #define VM_MAX_CPUS MAX_NUM_CPUS
 
 // We still don't know what's special about this one. Leave it in source.
-#define atomic_load_acq_load(x) atomic_read(x)
+#define atomic_load_acq_long(x) atomic_read(x)
 
 enum vm_suspend_how {
 	VM_SUSPEND_NONE,
