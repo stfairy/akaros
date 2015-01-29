@@ -45,3 +45,4 @@ sed -i 's/MSR_EFER/MSR_EFER/g' $*
 sed -i 's/MSR_TSC/MSR_IA32_TSC/g' $*
 sed -i 's/MSR_SF_MASK/MSR_SYSCALL_MASK/g' $*
 sed -i 's/DEFAULT_APIC_BASE/LAPIC_BASE/g' $*
+sed -i 's/MSR_VMX_EPT_VPID_CAP/MSR_IA32_VMX_EPT_VPID_CAP/g' $*

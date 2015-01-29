@@ -26,25 +26,18 @@
  * $FreeBSD$
  */
 
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
+#include <env.h>
+#include <arch/vmm.h>
+#include <error.h>
+#include <pmap.h>
+#include <smp.h>
 
-#include <sys/param.h>
-#include <sys/kernel.h>
-#include <sys/types.h>
-#include <sys/systm.h>
-#include <sys/smp.h>
-#include <sys/sysctl.h>
-
-#include <vm/vm.h>
-#include <vm/pmap.h>
-#include <vm/vm_extern.h>
-
-#include <machine/vmm.h>
-
+#include "../vmm_host.h"
 #include "vmx_cpufunc.h"
-#include "vmm_ipi.h"
+#include "vmcs.h"
 #include "ept.h"
+#include "vmx.h"
+#include "../vmm_ipi.h"
 
 #define	EPT_SUPPORTS_EXEC_ONLY(cap)	((cap) & (1UL << 0))
 #define	EPT_PWL4(cap)			((cap) & (1UL << 6))
@@ -80,7 +73,7 @@ int ept_init(int ipinum)
 	int use_hw_ad_bits, use_superpages, use_exec_only;
 	uint64_t cap;
 
-	cap = read_msr(MSR_VMX_EPT_VPID_CAP);
+	cap = read_msr(MSR_IA32_VMX_EPT_VPID_CAP);
 
 	/*
 	 * Verify that:
