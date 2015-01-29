@@ -73,7 +73,7 @@ struct vhpet_callout_arg {
 
 struct vhpet {
 	struct vm *vm;
-	struct mtx mtx;
+	qlock_t mtx;
 	sbintime_t freq_sbt;
 
 	uint64_t config;			/* Configuration */

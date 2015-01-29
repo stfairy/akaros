@@ -1,2 +1,3 @@
+obj-y						+= vmm.o
 obj-y						+= vmm_host.o
 obj-y						+= intel/

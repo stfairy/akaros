@@ -83,7 +83,7 @@ struct atpic {
 
 struct vatpic {
 	struct vm *vm;
-	struct mtx mtx;
+	qlock_t mtx;
 	struct atpic atpic[2];
 	uint8_t elc[2];
 };

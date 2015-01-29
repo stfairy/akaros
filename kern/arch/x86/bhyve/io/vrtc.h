@@ -29,7 +29,10 @@
 #ifndef _VRTC_H_
 #define	_VRTC_H_
 
+// AKAROS -- we will NEVER do ISA emulation.  Let's end it here.
+#if 0 // AKAROS
 #include <isa/isareg.h>
+#endif
 
 struct vrtc;
 

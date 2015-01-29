@@ -30,8 +30,6 @@
 #ifndef _VATPIT_H_
 #define	_VATPIT_H_
 
-#include <machine/timerreg.h>
-
 #define	NMISC_PORT	0x61
 
 struct vatpit *vatpit_init(struct vm *vm);

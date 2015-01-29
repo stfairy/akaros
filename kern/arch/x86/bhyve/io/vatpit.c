@@ -93,7 +93,7 @@ struct channel {
 
 struct vatpit {
 	struct vm *vm;
-	struct mtx mtx;
+	qlock_t mtx;
 
 	sbintime_t freq_sbt;
 

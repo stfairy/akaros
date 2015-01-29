@@ -55,7 +55,7 @@ __FBSDID("$FreeBSD$");
 
 struct vioapic {
 	struct vm *vm;
-	struct mtx mtx;
+	qlock_t mtx;
 	uint32_t id;
 	uint32_t ioregsel;
 	struct {

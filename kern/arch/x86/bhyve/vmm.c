@@ -25,57 +25,27 @@
  *
  * $FreeBSD$
  */
-
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
-
-#include <sys/param.h>
-#include <sys/systm.h>
-#include <sys/kernel.h>
-#include <sys/module.h>
-#include <sys/sysctl.h>
-#include <sys/malloc.h>
-#include <sys/pcpu.h>
-#include <sys/lock.h>
-#include <sys/mutex.h>
-#include <sys/proc.h>
-#include <sys/rwlock.h>
-#include <sys/sched.h>
-#include <sys/smp.h>
-#include <sys/systm.h>
-
-#include <vm/vm.h>
-#include <vm/vm_object.h>
-#include <vm/vm_page.h>
-#include <vm/pmap.h>
-#include <vm/vm_map.h>
-#include <vm/vm_extern.h>
-#include <vm/vm_param.h>
-
-#include <machine/cpu.h>
-#include <machine/vm.h>
-#include <machine/pcb.h>
-#include <machine/smp.h>
-#include <x86/psl.h>
-#include <x86/apicreg.h>
-#include <machine/vmparam.h>
-
-#include <machine/vmm.h>
-#include <machine/vmm_dev.h>
-#include <machine/vmm_instruction_emul.h>
+#include <env.h>
+#include <arch/vmm.h>
+#include <error.h>
+#include <pmap.h>
+#include <smp.h>
+#include <trap.h>
+#include "vmm_host.h"
+#include "vmm_dev.h"
 
 #include "vmm_ioport.h"
 #include "vmm_ktr.h"
 #include "vmm_host.h"
 #include "vmm_mem.h"
 #include "vmm_util.h"
-#include "vatpic.h"
-#include "vatpit.h"
-#include "vhpet.h"
-#include "vioapic.h"
-#include "vlapic.h"
-#include "vpmtmr.h"
-#include "vrtc.h"
+#include "io/vatpic.h"
+#include "io/vatpit.h"
+#include "io/vhpet.h"
+#include "io/vioapic.h"
+#include "io/vlapic.h"
+#include "io/vpmtmr.h"
+#include "io/vrtc.h"
 #include "vmm_ipi.h"
 #include "vmm_stat.h"
 #include "vmm_lapic.h"
@@ -93,7 +63,7 @@ struct vlapic;
  * (x) initialized before use
  */
 struct vcpu {
-	struct mtx mtx;				/* (o) protects 'state' and 'hostcpu' */
+	qlock_t mtx;				/* (o) protects 'state' and 'hostcpu' */
 	enum vcpu_state state;		/* (o) vcpu state */
 	int hostcpu;				/* (o) vcpu's host cpu */
 	struct vlapic *vlapic;		/* (i) APIC device model */
@@ -148,7 +118,7 @@ struct vm {
 	cpuset_t rendezvous_done_cpus;	/* (x) rendezvous finished */
 	void *rendezvous_arg;		/* (x) rendezvous func/arg */
 	vm_rendezvous_func_t rendezvous_func;
-	struct mtx rendezvous_mtx;	/* (o) rendezvous lock */
+	qlock_t rendezvous_mtx;	/* (o) rendezvous lock */
 	int num_mem_segs;			/* (o) guest memory segments */
 	struct mem_seg mem_segs[VM_MAX_MEMORY_SEGMENTS];
 	struct vmspace *vmspace;	/* (o) guest's address space */

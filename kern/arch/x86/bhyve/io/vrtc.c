@@ -69,7 +69,7 @@ CTASSERT(sizeof(struct rtcdev) == 128);
 
 struct vrtc {
 	struct vm *vm;
-	struct mtx mtx;
+	qlock_t mtx;
 	struct callout callout;
 	unsigned int addr;					/* RTC register to read or write */
 	sbintime_t base_uptime;

@@ -70,7 +70,7 @@ struct vmmdev_softc {
 
 static SLIST_HEAD(, vmmdev_softc) head;
 
-static struct mtx vmmdev_mtx;
+static qlock_t vmmdev_mtx;
 
 static MALLOC_DEFINE(M_VMMDEV, "vmmdev", "vmmdev");
 
