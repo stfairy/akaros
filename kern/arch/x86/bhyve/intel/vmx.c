@@ -793,7 +793,7 @@ static int vmx_setup_cr_shadow(int which, struct vmcs *vmcs, uint32_t initial)
 #define	vmx_setup_cr0_shadow(vmcs,init)	vmx_setup_cr_shadow(0, (vmcs), (init))
 #define	vmx_setup_cr4_shadow(vmcs,init)	vmx_setup_cr_shadow(4, (vmcs), (init))
 
-static void *vmx_vminit(struct vm *vm, pmap_t pmap)
+static void *vmx_vminit(struct vm *vm, struct proc *p)
 {
 	uint16_t vpid[VM_MAXCPU];
 	int i, error;
@@ -809,7 +809,7 @@ static void *vmx_vminit(struct vm *vm, pmap_t pmap)
 	}
 	vmx->vm = vm;
 
-	vmx->eptp = eptp(PADDR((vm_offset_t) pmap->pm_pml4));
+	vmx->eptp = eptp(p->env_cr3);
 
 	/*
 	 * Clean up EPTP-tagged guest physical and combined mappings
@@ -936,7 +936,7 @@ static void *vmx_vminit(struct vm *vm, pmap_t pmap)
 		if (error != 0)
 			panic("vmx_setup_cr4_shadow %d", error);
 
-		vmx->ctx[i].pmap = pmap;
+		vmx->ctx[i].p = p;
 	}
 
 	return (vmx);

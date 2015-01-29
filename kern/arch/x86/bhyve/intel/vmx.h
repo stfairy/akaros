@@ -67,8 +67,10 @@ struct vmxctx {
 	/*
 	 * The pmap needs to be deactivated in vmx_enter_guest()
 	 * so keep a copy of the 'pmap' in each vmxctx.
-	 */
 	struct pmap *pmap;
+	 */
+	// For Akaros. The pmap did not apply directly, but struct proc * is right.
+	struct proc *p;
 };
 
 struct vmxcap {
