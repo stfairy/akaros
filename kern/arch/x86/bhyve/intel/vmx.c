@@ -849,11 +849,11 @@ static void *vmx_vminit(struct vm *vm, struct proc *p)
 	 */
 	if (guest_msr_rw(vmx, MSR_GS_BASE) ||
 		guest_msr_rw(vmx, MSR_FS_BASE) ||
-		guest_msr_rw(vmx, MSR_SYSENTER_CS_MSR) ||
-		guest_msr_rw(vmx, MSR_SYSENTER_ESP_MSR) ||
-		guest_msr_rw(vmx, MSR_SYSENTER_EIP_MSR) ||
+		guest_msr_rw(vmx, MSR_IA32_SYSENTER_CS) ||
+		guest_msr_rw(vmx, MSR_IA32_SYSENTER_ESP) ||
+		guest_msr_rw(vmx, MSR_IA32_SYSENTER_EIP) ||
 		guest_msr_rw(vmx, MSR_EFER) ||
-		guest_msr_rw(vmx, MSR_IA32_CR_PAT) || guest_msr_ro(vmx, MSR_TSC))
+		guest_msr_rw(vmx, MSR_IA32_CR_PAT) || guest_msr_ro(vmx, MSR_IA32_TSC))
 		panic("vmx_vminit: error setting guest msr access");
 
 	vpid_alloc(vpid, VM_MAXCPU);

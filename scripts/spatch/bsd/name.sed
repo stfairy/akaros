@@ -27,3 +27,9 @@ sed -i 's/IDT_BR/T_BOUND/g' $*
 sed -i 's/MSR_GSBASE/MSR_GS_BASE/g' $*
 sed -i 's/MSR_FSBASE/MSR_FS_BASE/g' $*
 sed -i 's/MSR_KGSBASE/MSR_KERNEL_GS_BASE/g' $*
+sed -i 's/MSR_SYSENTER_CS_MSR/MSR_IA32_SYSENTER_CS/g' $*
+sed -i 's/MSR_SYSENTER_ESP_MSR/MSR_IA32_SYSENTER_ESP/g' $*
+sed -i 's/MSR_SYSENTER_EIP_MSR/MSR_IA32_SYSENTER_EIP/g' $*
+sed -i 's/MSR_EFER/MSR_EFER/g' $*
+sed -i 's/MSR_TSC/MSR_IA32_TSC/g' $*
+sed -i 's/MSR_SF_MASK/MSR_SYSCALL_MASK/g' $*

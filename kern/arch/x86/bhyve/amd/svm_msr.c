@@ -43,7 +43,7 @@ enum {
 	IDX_MSR_LSTAR,
 	IDX_MSR_CSTAR,
 	IDX_MSR_STAR,
-	IDX_MSR_SF_MASK,
+	IDX_MSR_SYSCALL_MASK,
 	HOST_MSR_NUM				/* must be the last enumeration */
 };
 
@@ -58,7 +58,7 @@ void svm_msr_init(void)
 	host_msrs[IDX_MSR_LSTAR] = read_msr(MSR_LSTAR);
 	host_msrs[IDX_MSR_CSTAR] = read_msr(MSR_CSTAR);
 	host_msrs[IDX_MSR_STAR] = read_msr(MSR_STAR);
-	host_msrs[IDX_MSR_SF_MASK] = read_msr(MSR_SF_MASK);
+	host_msrs[IDX_MSR_SYSCALL_MASK] = read_msr(MSR_SYSCALL_MASK);
 }
 
 void svm_msr_guest_init(struct svm_softc *sc, int vcpu)
@@ -89,7 +89,7 @@ void svm_msr_guest_exit(struct svm_softc *sc, int vcpu)
 	write_msr(MSR_LSTAR, host_msrs[IDX_MSR_LSTAR]);
 	write_msr(MSR_CSTAR, host_msrs[IDX_MSR_CSTAR]);
 	write_msr(MSR_STAR, host_msrs[IDX_MSR_STAR]);
-	write_msr(MSR_SF_MASK, host_msrs[IDX_MSR_SF_MASK]);
+	write_msr(MSR_SYSCALL_MASK, host_msrs[IDX_MSR_SYSCALL_MASK]);
 
 	/* MSR_KERNEL_GS_BASE will be restored on the way back to userspace */
 }

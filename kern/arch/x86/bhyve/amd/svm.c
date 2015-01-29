@@ -517,13 +517,13 @@ static void *svm_vminit(struct vm *vm, pmap_t pmap)
 	svm_msr_rw_ok(svm_sc->msr_bitmap, MSR_STAR);
 	svm_msr_rw_ok(svm_sc->msr_bitmap, MSR_LSTAR);
 	svm_msr_rw_ok(svm_sc->msr_bitmap, MSR_CSTAR);
-	svm_msr_rw_ok(svm_sc->msr_bitmap, MSR_SF_MASK);
-	svm_msr_rw_ok(svm_sc->msr_bitmap, MSR_SYSENTER_CS_MSR);
-	svm_msr_rw_ok(svm_sc->msr_bitmap, MSR_SYSENTER_ESP_MSR);
-	svm_msr_rw_ok(svm_sc->msr_bitmap, MSR_SYSENTER_EIP_MSR);
+	svm_msr_rw_ok(svm_sc->msr_bitmap, MSR_SYSCALL_MASK);
+	svm_msr_rw_ok(svm_sc->msr_bitmap, MSR_IA32_SYSENTER_CS);
+	svm_msr_rw_ok(svm_sc->msr_bitmap, MSR_IA32_SYSENTER_ESP);
+	svm_msr_rw_ok(svm_sc->msr_bitmap, MSR_IA32_SYSENTER_EIP);
 	svm_msr_rw_ok(svm_sc->msr_bitmap, MSR_IA32_CR_PAT);
 
-	svm_msr_rd_ok(svm_sc->msr_bitmap, MSR_TSC);
+	svm_msr_rd_ok(svm_sc->msr_bitmap, MSR_IA32_TSC);
 
 	/*
 	 * Intercept writes to make sure that the EFER_SVM bit is not cleared.
