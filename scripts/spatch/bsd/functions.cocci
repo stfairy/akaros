@@ -47,3 +47,31 @@ E
 +printk(
 ...)
 
+@@
+@@
+-fpusave(
++save_fp_state(
+...)
+
+@@
+@@
+-fpurestore(
++restore_fp_state(
+...)
+
+@@
+@@
+-fpu_save_area_free(
++kfree(
+...)
+
+@@
+@@
+-fpu_save_area_alloc()
++kmalloc(sizeof(struct ancillary_state), KMALLOC_WAIT)
+
+@@
+@@
+-fpu_save_area_reset(
++panic(
+ ...)

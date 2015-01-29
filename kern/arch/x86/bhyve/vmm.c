@@ -31,6 +31,7 @@
 #include <pmap.h>
 #include <smp.h>
 #include <trap.h>
+#include <kmalloc.h>
 #include "vmm_host.h"
 #include "vmm_dev.h"
 
@@ -75,7 +76,7 @@ struct vcpu {
 	int exc_vector;				/* (x) exception collateral */
 	int exc_errcode_valid;
 	uint32_t exc_errcode;
-	struct savefpu *guestfpu;	/* (a,i) guest fpu state */
+	struct ancillary_state *guestfpu;	/* (a,i) guest fpu state */
 	uint64_t guest_xcr0;		/* (i) guest %xcr0 register */
 	void *stats;				/* (a,i) statistics */
 	struct vm_exit exitinfo;	/* (x) exit reason and collateral */
@@ -193,7 +194,7 @@ static void vcpu_cleanup(struct vm *vm, int i, bool destroy)
 	VLAPIC_CLEANUP(vm->cookie, vcpu->vlapic);
 	if (destroy) {
 		vmm_stat_free(vcpu->stats);
-		fpu_save_area_free(vcpu->guestfpu);
+		kfree(vcpu->guestfpu);
 	}
 }
 
@@ -212,7 +213,8 @@ static void vcpu_init(struct vm *vm, int vcpu_id, bool create)
 		vcpu_lock_init(vcpu);
 		vcpu->state = VCPU_IDLE;
 		vcpu->hostcpu = NOCPU;
-		vcpu->guestfpu = fpu_save_area_alloc();
+		vcpu->guestfpu = kmalloc(sizeof(struct ancillary_state),
+					 KMALLOC_WAIT);
 		vcpu->stats = vmm_stat_alloc();
 	}
 
@@ -222,8 +224,10 @@ static void vcpu_init(struct vm *vm, int vcpu_id, bool create)
 	vcpu->nmi_pending = 0;
 	vcpu->extint_pending = 0;
 	vcpu->exception_pending = 0;
+#if 0 // AKAROS
 	vcpu->guest_xcr0 = XFEATURE_ENABLED_X87;
-	fpu_save_area_reset(vcpu->guestfpu);
+#endif
+	panic("%s %p ", __func__, vcpu->guestfpu);
 	vmm_stat_init(vcpu->stats);
 }
 
@@ -864,7 +868,7 @@ static void restore_guest_fpustate(struct vcpu *vcpu)
 
 	/* restore guest FPU state */
 	fpu_stop_emulating();
-	fpurestore(vcpu->guestfpu);
+	restore_fp_state(vcpu->guestfpu);
 
 	/* restore guest XCR0 if XSAVE is enabled in the host */
 	if (rcr4() & X86_CR4_OSXSAVE)
@@ -891,7 +895,7 @@ static void save_guest_fpustate(struct vcpu *vcpu)
 
 	/* save guest FPU state */
 	fpu_stop_emulating();
-	fpusave(vcpu->guestfpu);
+	save_fp_state(vcpu->guestfpu);
 	fpu_start_emulating();
 }
 
