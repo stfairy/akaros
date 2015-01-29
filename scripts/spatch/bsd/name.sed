@@ -24,7 +24,15 @@ sed -i 's/IDT_OF/T_OFLOW/g' $*
 sed -i 's/IDT_BR/T_BOUND/g' $*
 sed -i 's/IDT_MC/T_MCHK/g' $*
 sed -i 's/IDT_NMI/T_NMI/g' $*
+
+sed -i 's/IDT_PF/T_PGFLT/g' $*
+sed -i 's/IDT_DF/T_DBLFLT/g' $*
+
 sed -i 's/PSL_I/FL_IF/g' $*
+
+sed -i 's/VM_PROT_READ/PROT_READ/g' $*
+sed -i 's/VM_PROT_WRITE/PROT_WRITE/g' $*
+sed -i 's/VM_PROT_EXECUTE/PROT_EXEC/g' $*
 
 
 sed -i 's/MSR_GSBASE/MSR_GS_BASE/g' $*

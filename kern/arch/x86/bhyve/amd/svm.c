@@ -725,11 +725,11 @@ static int npf_fault_type(uint64_t exitinfo1)
 {
 
 	if (exitinfo1 & VMCB_NPF_INFO1_W)
-		return (VM_PROT_WRITE);
+		return (PROT_WRITE);
 	else if (exitinfo1 & VMCB_NPF_INFO1_ID)
-		return (VM_PROT_EXECUTE);
+		return (PROT_EXEC);
 	else
-		return (VM_PROT_READ);
+		return (PROT_READ);
 }
 
 static bool svm_npf_emul_fault(uint64_t exitinfo1)
@@ -1235,7 +1235,7 @@ svm_vmexit(struct svm_softc *svm_sc, int vcpu, struct vm_exit *vmexit)
 					VCPU_CTR0(svm_sc->vm, vcpu, "Vectoring to MCE handler");
 					__asm __volatile("int $18");
 					break;
-				case IDT_PF:
+				case T_PGFLT:
 					error = svm_setreg(svm_sc, vcpu, VM_REG_GUEST_CR2, info2);
 					KASSERT(error == 0, ("%s: error %d updating cr2",
 										 __func__, error));
@@ -1248,7 +1248,7 @@ svm_vmexit(struct svm_softc *svm_sc, int vcpu, struct vm_exit *vmexit)
 					errcode_valid = 1;
 					break;
 
-				case IDT_DF:
+				case T_DBLFLT:
 					errcode_valid = 1;
 					info1 = 0;
 					break;

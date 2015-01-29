@@ -112,7 +112,7 @@ static int vmmdev_rw(struct cdev *cdev, struct uio *uio, int flags)
 	if (sc == NULL)
 		error = ENXIO;
 
-	prot = (uio->uio_rw == UIO_WRITE ? VM_PROT_WRITE : VM_PROT_READ);
+	prot = (uio->uio_rw == UIO_WRITE ? PROT_WRITE : PROT_READ);
 	while (uio->uio_resid > 0 && error == 0) {
 		gpa = uio->uio_offset;
 		off = gpa & PAGE_MASK;
@@ -425,9 +425,9 @@ vmmdev_ioctl(struct cdev *cdev, unsigned long cmd, caddr_t data, int fflag,
 			error = vhpet_getcap((struct vm_hpet_cap *)data);
 			break;
 		case VM_GLA2GPA:{
-				CTASSERT(PROT_READ == VM_PROT_READ);
-				CTASSERT(PROT_WRITE == VM_PROT_WRITE);
-				CTASSERT(PROT_EXEC == VM_PROT_EXECUTE);
+				CTASSERT(PROT_READ == PROT_READ);
+				CTASSERT(PROT_WRITE == PROT_WRITE);
+				CTASSERT(PROT_EXEC == PROT_EXEC);
 				gg = (struct vm_gla2gpa *)data;
 				error = vmm_gla2gpa(sc->vm, gg->vcpuid, &gg->paging, gg->gla,
 									gg->prot, &gg->gpa);

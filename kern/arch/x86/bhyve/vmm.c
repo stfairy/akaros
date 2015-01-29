@@ -658,7 +658,7 @@ static void vm_iommu_modify(struct vm *vm, bool map)
 
 		gpa = seg->gpa;
 		while (gpa < seg->gpa + seg->len) {
-			vp = vm_gpa_hold(vm, gpa, PAGE_SIZE, VM_PROT_WRITE, &cookie);
+			vp = vm_gpa_hold(vm, gpa, PAGE_SIZE, PROT_WRITE, &cookie);
 			KASSERT(vp != NULL, ("vm(%s) could not map gpa %#lx",
 								 vm_name(vm), gpa));
 
@@ -1160,16 +1160,16 @@ static int vm_handle_paging(struct vm *vm, int vcpuid, bool * retu)
 	vme = &vcpu->exitinfo;
 
 	ftype = vme->u.paging.fault_type;
-	KASSERT(ftype == VM_PROT_READ ||
-			ftype == VM_PROT_WRITE || ftype == VM_PROT_EXECUTE,
+	KASSERT(ftype == PROT_READ ||
+			ftype == PROT_WRITE || ftype == PROT_EXEC,
 			("vm_handle_paging: invalid fault_type %d", ftype));
 
-	if (ftype == VM_PROT_READ || ftype == VM_PROT_WRITE) {
+	if (ftype == PROT_READ || ftype == PROT_WRITE) {
 		rv = pmap_emulate_accessed_dirty(vmspace_pmap(vm->vmspace),
 										 vme->u.paging.gpa, ftype);
 		if (rv == 0) {
 			VCPU_CTR2(vm, vcpuid, "%s bit emulation for gpa %#lx",
-					  ftype == VM_PROT_READ ? "accessed" : "dirty",
+					  ftype == PROT_READ ? "accessed" : "dirty",
 					  vme->u.paging.gpa);
 			goto done;
 		}
@@ -1558,7 +1558,7 @@ static enum exc_class exception_class(uint64_t info)
 	}
 
 	switch (vector) {
-		case IDT_PF:
+		case T_PGFLT:
 		case IDT_VE:
 			return (EXC_PAGEFAULT);
 		case IDT_DE:
@@ -1588,7 +1588,7 @@ nested_fault(struct vm *vm, int vcpuid, uint64_t info1, uint64_t info2,
 	 */
 	type1 = info1 & VM_INTINFO_TYPE;
 	vector1 = info1 & 0xff;
-	if (type1 == VM_INTINFO_HWEXCEPTION && vector1 == IDT_DF) {
+	if (type1 == VM_INTINFO_HWEXCEPTION && vector1 == T_DBLFLT) {
 		VCPU_CTR2(vm, vcpuid, "triple fault: info1(%#lx), info2(%#lx)",
 				  info1, info2);
 		vm_suspend(vm, VM_SUSPEND_TRIPLEFAULT);
@@ -1604,7 +1604,7 @@ nested_fault(struct vm *vm, int vcpuid, uint64_t info1, uint64_t info2,
 	if ((exc1 == EXC_CONTRIBUTORY && exc2 == EXC_CONTRIBUTORY) ||
 		(exc1 == EXC_PAGEFAULT && exc2 != EXC_BENIGN)) {
 		/* Convert nested fault into a double fault. */
-		*retinfo = IDT_DF;
+		*retinfo = T_DBLFLT;
 		*retinfo |= VM_INTINFO_VALID | VM_INTINFO_HWEXCEPTION;
 		*retinfo |= VM_INTINFO_DEL_ERRCODE;
 	} else {
@@ -1702,7 +1702,7 @@ vm_inject_exception(struct vm *vm, int vcpuid, int vector, int errcode_valid,
 	 * the guest. It is a derived exception that results from specific
 	 * combinations of nested faults.
 	 */
-	if (vector == IDT_DF)
+	if (vector == T_DBLFLT)
 		return (EINVAL);
 
 	vcpu = &vm->vcpu[vcpuid];
@@ -1761,7 +1761,7 @@ void vm_inject_pf(void *vmarg, int vcpuid, int error_code, uint64_t cr2)
 	error = vm_set_register(vm, vcpuid, VM_REG_GUEST_CR2, cr2);
 	KASSERT(error == 0, ("vm_set_register(cr2) error %d", error));
 
-	vm_inject_fault(vm, vcpuid, IDT_PF, 1, error_code);
+	vm_inject_fault(vm, vcpuid, T_PGFLT, 1, error_code);
 }
 
 static VMM_STAT(VCPU_NMI_COUNT, "number of NMIs delivered to vcpu");

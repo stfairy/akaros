@@ -1199,13 +1199,13 @@ static int pf_error_code(int usermode, int prot, int rsvd, uint64_t pte)
 
 	if (pte & PG_V)
 		error_code |= PGEX_P;
-	if (prot & VM_PROT_WRITE)
+	if (prot & PROT_WRITE)
 		error_code |= PGEX_W;
 	if (usermode)
 		error_code |= PGEX_U;
 	if (rsvd)
 		error_code |= PGEX_RSV;
-	if (prot & VM_PROT_EXECUTE)
+	if (prot & PROT_EXEC)
 		error_code |= PGEX_I;
 
 	return (error_code);
@@ -1240,7 +1240,7 @@ vmm_gla2gpa(struct vm *vm, int vcpuid, struct vm_guest_paging *paging,
 	void *cookie;
 
 	usermode = (paging->cpl == 3 ? 1 : 0);
-	writable = prot & VM_PROT_WRITE;
+	writable = prot & PROT_WRITE;
 	cookie = NULL;
 	retval = 0;
 	retries = 0;

@@ -56,6 +56,7 @@ typedef uint64_t cpuset_t;
 #define KASSERT(x,y) assert(0); /*if (! x) {printk y ; assert(0); }*/
 #define smp_rendezvous(a,b,c,d) panic("smp_rendezvous")
 #define NOCPU (-1)
+#define __predict_false(x) (x)
 
 #define bootverbose 1
 // TODO: make this work even out of a function.

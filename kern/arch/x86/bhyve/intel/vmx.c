@@ -1779,11 +1779,11 @@ static int ept_fault_type(uint64_t ept_qual)
 	int fault_type;
 
 	if (ept_qual & EPT_VIOLATION_DATA_WRITE)
-		fault_type = VM_PROT_WRITE;
+		fault_type = PROT_WRITE;
 	else if (ept_qual & EPT_VIOLATION_INST_FETCH)
-		fault_type = VM_PROT_EXECUTE;
+		fault_type = PROT_EXEC;
 	else
-		fault_type = VM_PROT_READ;
+		fault_type = PROT_READ;
 
 	return (fault_type);
 }
@@ -1960,7 +1960,10 @@ vmx_handle_apic_access(struct vmx *vmx, int vcpuid, struct vm_exit *vmexit)
 	}
 
 	if (allowed) {
+		panic(" vmexit_inst_emul(vmexit, LAPIC_BASE + offset, VIE_INVALID_GLA);\n");
+#if 0 // AKAROS
 		vmexit_inst_emul(vmexit, LAPIC_BASE + offset, VIE_INVALID_GLA);
+#endif
 	}
 
 	/*
@@ -2315,7 +2318,7 @@ static int vmx_exit_process(struct vmx *vmx, int vcpu, struct vm_exit *vmexit)
 			 * See "Information for VM Exits Due to Vectored Events".
 			 */
 			if ((idtvec_info & VMCS_IDT_VEC_VALID) == 0 &&
-				(intr_vec != IDT_DF) && (intr_info & EXIT_QUAL_NMIUDTI) != 0)
+				(intr_vec != T_DBLFLT) && (intr_info & EXIT_QUAL_NMIUDTI) != 0)
 				vmx_restore_nmi_blocking(vmx, vcpu);
 
 			/*
@@ -2334,7 +2337,7 @@ static int vmx_exit_process(struct vmx *vmx, int vcpu, struct vm_exit *vmexit)
 				return (1);
 			}
 
-			if (intr_vec == IDT_PF) {
+			if (intr_vec == T_PGFLT) {
 				error = vmxctx_setreg(vmxctx, VM_REG_GUEST_CR2, qual);
 				KASSERT(error == 0, ("%s: vmxctx_setreg(cr2) error %d",
 									 __func__, error));
@@ -2515,7 +2518,7 @@ vmx_exit_handle_nmi(struct vmx *vmx, int vcpuid, struct vm_exit *vmexit)
 }
 
 static int
-vmx_run(void *arg, int vcpu, register_t rip, pmap_t pmap,
+vmx_run(void *arg, int vcpu, register_t rip, struct proc *p,
 		void *rendezvous_cookie, void *suspend_cookie)
 {
 	int rc, handled, launched;
@@ -2536,8 +2539,8 @@ vmx_run(void *arg, int vcpu, register_t rip, pmap_t pmap,
 	vmexit = vm_exitinfo(vm, vcpu);
 	launched = 0;
 
-	KASSERT(vmxctx->pmap == pmap,
-			("pmap %p different than ctx pmap %p", pmap, vmxctx->pmap));
+	KASSERT(vmxctx->p == p,
+			("p %p different than ctx p %p", p, vmxctx->p));
 
 	vmx_msr_guest_enter(vmx, vcpu);
 
@@ -2554,7 +2557,7 @@ vmx_run(void *arg, int vcpu, register_t rip, pmap_t pmap,
 	vmcs_write(VMCS_HOST_CR3, rcr3());
 
 	vmcs_write(VMCS_GUEST_RIP, rip);
-	vmx_set_pcpu_defaults(vmx, vcpu, pmap);
+	vmx_set_pcpu_defaults(vmx, vcpu, p);
 	do {
 		KASSERT(vmcs_guest_rip() == rip, ("%s: vmcs guest rip mismatch "
 										  "%#lx/%#lx", __func__,
@@ -2816,7 +2819,7 @@ static int vmx_setreg(void *arg, int vcpu, int reg, uint64_t val)
 {
 	int error, hostcpu, running, shadow;
 	uint64_t ctls;
-	pmap_t pmap;
+	struct proc *p;
 	struct vmx *vmx = arg;
 
 	running = vcpu_is_running(vmx->vm, vcpu, &hostcpu);
@@ -2866,8 +2869,8 @@ static int vmx_setreg(void *arg, int vcpu, int reg, uint64_t val)
 			 * XXX the processor retains global mappings when %cr3
 			 * is updated but vmx_invvpid() does not.
 			 */
-			pmap = vmx->ctx[vcpu].pmap;
-			vmx_invvpid(vmx, vcpu, pmap, running);
+			p = vmx->ctx[vcpu].p;
+			vmx_invvpid(vmx, vcpu, p, running);
 		}
 	}
 
@@ -2941,6 +2944,7 @@ static int vmx_getcap(void *arg, int vcpu, int type, int *retval)
 
 static int vmx_setcap(void *arg, int vcpu, int type, int val)
 {
+	int8_t irq_status = irq_is_enabled();
 	struct vmx *vmx = arg;
 	struct vmcs *vmcs = &vmx->vmcs[vcpu];
 	uint32_t baseval;
