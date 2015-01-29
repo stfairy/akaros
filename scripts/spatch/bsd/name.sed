@@ -48,3 +48,4 @@ sed -i 's/DEFAULT_APIC_BASE/LAPIC_BASE/g' $*
 sed -i 's/MSR_VMX_EPT_VPID_CAP/MSR_IA32_VMX_EPT_VPID_CAP/g' $*
 sed -i 's/MSR_PLATFORM_INFO/MSR_NHM_PLATFORM_INFO/g' $*
 sed -i 's/MSR_TURBO_RATIO_LIMIT/MSR_NHM_TURBO_RATIO_LIMIT/g' $*
+sed -i 's/\([^\.]\)tsc_freq/\1system_timing.tsc_freq/g' $*

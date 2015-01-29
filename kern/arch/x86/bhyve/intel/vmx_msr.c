@@ -264,7 +264,7 @@ void vmx_msr_init(void)
 	 * The ratio should really be based on the virtual TSC frequency as
 	 * opposed to the host TSC.
 	 */
-	ratio = (tsc_freq / bus_freq) & 0xff;
+	ratio = (system_timing.tsc_freq / bus_freq) & 0xff;
 
 	/*
 	 * The register definition is based on the micro-architecture
