@@ -71,9 +71,6 @@
 #include <event.h>
 #include <umem.h>
 #include <devalarm.h>
-#include <arch/types.h>
-#include <arch/emulate.h>
-#include <arch/vmdebug.h>
 #include <kdebug.h>
 #include <bitmap.h>
 
