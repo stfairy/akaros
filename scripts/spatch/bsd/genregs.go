@@ -1040,6 +1040,11 @@ var (
 )
 
 func main() {
+	if len(os.Args[1:]) < 1 { 
+		fmt.Fprintf(os.Stderr, "usage: genregs reg [reg ... ], e.g. genregs MSR_GSBASE or genregs MSR_GSBASE MSR_FSBASE\n")
+		fmt.Fprintf(os.Stderr, "usually appended to the name.sed script\n")
+		os.Exit(1)
+	}
 	for _, i := range os.Args[1:] {
 		v, ok := bsdregs[i]
 		if !ok {

@@ -24,3 +24,5 @@ sed -i 's/IDT_OF/T_OFLOW/g' $*
 sed -i 's/IDT_BR/T_BOUND/g' $*
 
 
+sed -i 's/MSR_GSBASE/MSR_GS_BASE/g' $*
+sed -i 's/MSR_FSBASE/MSR_FS_BASE/g' $*
