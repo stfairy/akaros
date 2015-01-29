@@ -14,3 +14,24 @@
 -enable_intr()
 +enable_irq()
 
+@@
+expression E;
+@@
+-atomic_readandclear_long(
++atomic_swap(
+E
++ , 0
+ )
+
+@@
+@@
+- atomic_cmpset_long(
++ atomic_cas(
+ ...)
+
+@@
+@@
+- atomic_set_long(
++ atomic_set(
+ ...)
+

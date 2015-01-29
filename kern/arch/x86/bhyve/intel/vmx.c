@@ -3077,8 +3077,8 @@ static int vmx_set_intr_ready(struct vlapic *vlapic, int vector, bool level)
 	 */
 	idx = vector / 64;
 	mask = 1UL << (vector % 64);
-	atomic_set_long(&pir_desc->pir[idx], mask);
-	notify = atomic_cmpset_long(&pir_desc->pending, 0, 1);
+	atomic_set(&pir_desc->pir[idx], mask);
+	notify = atomic_cas(&pir_desc->pending, 0, 1);
 
 	VMX_CTR_PIR(vlapic->vm, vlapic->vcpuid, pir_desc, notify, vector,
 				level, "vmx_set_intr_ready");
@@ -3228,7 +3228,7 @@ static void vmx_inject_pir(struct vlapic *vlapic)
 
 	vlapic_vtx = (struct vlapic_vtx *)vlapic;
 	pir_desc = vlapic_vtx->pir_desc;
-	if (atomic_cmpset_long(&pir_desc->pending, 1, 0) == 0) {
+	if (atomic_cas(&pir_desc->pending, 1, 0) == 0) {
 		VCPU_CTR0(vlapic->vm, vlapic->vcpuid, "vmx_inject_pir: "
 				  "no posted interrupt pending");
 		return;
@@ -3238,7 +3238,7 @@ static void vmx_inject_pir(struct vlapic *vlapic)
 	pirbase = -1;
 	lapic = vlapic->apic_page;
 
-	val = atomic_readandclear_long(&pir_desc->pir[0]);
+	val = atomic_swap(&pir_desc->pir[0], 0);
 	if (val != 0) {
 		lapic->irr0 |= val;
 		lapic->irr1 |= val >> 32;
@@ -3246,7 +3246,7 @@ static void vmx_inject_pir(struct vlapic *vlapic)
 		pirval = val;
 	}
 
-	val = atomic_readandclear_long(&pir_desc->pir[1]);
+	val = atomic_swap(&pir_desc->pir[1], 0);
 	if (val != 0) {
 		lapic->irr2 |= val;
 		lapic->irr3 |= val >> 32;
@@ -3254,7 +3254,7 @@ static void vmx_inject_pir(struct vlapic *vlapic)
 		pirval = val;
 	}
 
-	val = atomic_readandclear_long(&pir_desc->pir[2]);
+	val = atomic_swap(&pir_desc->pir[2], 0);
 	if (val != 0) {
 		lapic->irr4 |= val;
 		lapic->irr5 |= val >> 32;
@@ -3262,7 +3262,7 @@ static void vmx_inject_pir(struct vlapic *vlapic)
 		pirval = val;
 	}
 
-	val = atomic_readandclear_long(&pir_desc->pir[3]);
+	val = atomic_swap(&pir_desc->pir[3], 0);
 	if (val != 0) {
 		lapic->irr6 |= val;
 		lapic->irr7 |= val >> 32;
