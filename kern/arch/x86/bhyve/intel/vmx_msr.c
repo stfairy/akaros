@@ -26,18 +26,15 @@
  * $FreeBSD$
  */
 
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
+#include <env.h>
+#include <arch/vmm.h>
+#include <error.h>
+#include <pmap.h>
+#include <smp.h>
 
-#include <sys/param.h>
-#include <sys/systm.h>
-#include <sys/cpuset.h>
-
-#include <machine/clock.h>
-#include <machine/cpufunc.h>
-#include <machine/md_var.h>
-#include <machine/specialreg.h>
-#include <machine/vmm.h>
+#include "../vmm_host.h"
+#include "vmx_cpufunc.h"
+#include "vmcs.h"
 
 #include "vmx.h"
 #include "vmx_msr.h"
@@ -96,7 +93,7 @@ vmx_set_ctlreg(int ctl_reg, int true_ctl_reg, uint32_t ones_mask,
 
 	val = read_msr(ctl_reg);
 	if (true_ctls_avail)
-		trueval = rdmsr(true_ctl_reg);	/* step c */
+		trueval = read_msr(true_ctl_reg);	/* step c */
 	else
 		trueval = val;	/* step a */
 
@@ -176,8 +173,11 @@ static uint64_t platform_info;
 static uint64_t turbo_ratio_limit;
 static uint64_t host_msrs[GUEST_MSR_NUM];
 
+// AKAROS nehalem? NONONO
+
 static bool nehalem_cpu(void)
 {
+#if 0 // AKAROS
 	unsigned int family, model;
 
 	/*
@@ -197,11 +197,13 @@ static bool nehalem_cpu(void)
 				break;
 		}
 	}
+#endif
 	return (false);
 }
 
 static bool westmere_cpu(void)
 {
+#if 0 // AKAROS no.
 	unsigned int family, model;
 
 	/*
@@ -219,6 +221,7 @@ static bool westmere_cpu(void)
 				break;
 		}
 	}
+#endif
 	return (false);
 }
 
@@ -277,7 +280,7 @@ void vmx_msr_init(void)
 	platform_info = (ratio << 8) | (ratio << 40);
 
 	/*
-	 * The number of valid bits in the MSR_TURBO_RATIO_LIMITx register is
+	 * The number of valid bits in the MSR_NHM_TURBO_RATIO_LIMITx register is
 	 * dependent on the maximum cores per package supported by the micro-
 	 * architecture. For e.g., Westmere supports 6 cores per package and
 	 * uses the low 48 bits. Sandybridge support 8 cores per package and
@@ -348,11 +351,11 @@ vmx_rdmsr(struct vmx *vmx, int vcpuid, unsigned int num, uint64_t * val,
 		case MSR_IA32_MISC_ENABLE:
 			*val = misc_enable;
 			break;
-		case MSR_PLATFORM_INFO:
+		case MSR_NHM_PLATFORM_INFO:
 			*val = platform_info;
 			break;
-		case MSR_TURBO_RATIO_LIMIT:
-		case MSR_TURBO_RATIO_LIMIT1:
+		case MSR_NHM_TURBO_RATIO_LIMIT:
+		case MSR_NHM_TURBO_RATIO_LIMIT1:
 			*val = turbo_ratio_limit;
 			break;
 		default:

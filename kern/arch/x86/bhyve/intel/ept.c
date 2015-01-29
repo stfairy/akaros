@@ -89,24 +89,26 @@ int ept_init(int ipinum)
 		!INVEPT_SUPPORTED(cap) || !INVEPT_ALL_TYPES_SUPPORTED(cap))
 		return (EINVAL);
 
-	ept_pmap_flags = ipinum & PMAP_NESTED_IPIMASK;
+#warning "what is this?"
+	ept_pmap_flags = ipinum & 0xff; // PMAP_NESTED_IPIMASK;
 
+	/* AKAROS: anything we run on supports these things. */
 	use_superpages = 1;
 	TUNABLE_INT_FETCH("hw.vmm.ept.use_superpages", &use_superpages);
 	if (use_superpages && EPT_PDE_SUPERPAGE(cap))
-		ept_pmap_flags |= PMAP_PDE_SUPERPAGE;	/* 2MB superpage */
+		ept_pmap_flags |= 1<<8; //PMAP_PDE_SUPERPAGE;	/* 2MB superpage */
 
 	use_hw_ad_bits = 1;
 	TUNABLE_INT_FETCH("hw.vmm.ept.use_hw_ad_bits", &use_hw_ad_bits);
 	if (use_hw_ad_bits && AD_BITS_SUPPORTED(cap))
 		ept_enable_ad_bits = 1;
 	else
-		ept_pmap_flags |= PMAP_EMULATE_AD_BITS;
+		ept_pmap_flags |= 1 << 9; //PMAP_EMULATE_AD_BITS;
 
 	use_exec_only = 1;
 	TUNABLE_INT_FETCH("hw.vmm.ept.use_exec_only", &use_exec_only);
 	if (use_exec_only && EPT_SUPPORTS_EXEC_ONLY(cap))
-		ept_pmap_flags |= PMAP_SUPPORTS_EXEC_ONLY;
+		ept_pmap_flags |= 1 << 10 ;  // PMAP_SUPPORTS_EXEC_ONLY;
 
 	return (0);
 }
@@ -160,10 +162,11 @@ void ept_invalidate_mappings(unsigned long eptp)
 	smp_rendezvous(NULL, invept_single_context, NULL, &invept_desc);
 }
 
-static int ept_pinit(pmap_t pmap)
+static int ept_pinit(void *v) //pmap_t pmap)
 {
 
-	return (pmap_pinit_type(pmap, PT_EPT, ept_pmap_flags));
+#warning "What would akaros want here? This is for mmu setup stuff"
+	return 1; //(pmap_pinit_type(pmap, PT_EPT, ept_pmap_flags));
 }
 
 struct vmspace *ept_vmspace_alloc(vm_offset_t min, vm_offset_t max)
@@ -181,7 +184,8 @@ void ept_vmspace_free(struct vmspace *vmspace)
 uint64_t eptp(uint64_t pml4)
 {
 	uint64_t eptp_val;
-
+#warning "where do we want to define PAT_? Or do we? "
+#define PAT_WRITE_BACK 6
 	eptp_val = pml4 | (EPT_PWLEVELS - 1) << 3 | PAT_WRITE_BACK;
 	if (ept_enable_ad_bits)
 		eptp_val |= EPT_ENABLE_AD_BITS;
