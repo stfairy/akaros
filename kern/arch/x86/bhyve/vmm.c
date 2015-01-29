@@ -1246,7 +1246,7 @@ static int vm_handle_inst_emul(struct vm *vm, int vcpuid, bool * retu)
 		vme->inst_length = vie->num_processed;
 
 	/* return to userland unless this is an in-kernel emulated device */
-	if (gpa >= DEFAULT_APIC_BASE && gpa < DEFAULT_APIC_BASE + PAGE_SIZE) {
+	if (gpa >= LAPIC_BASE && gpa < LAPIC_BASE + PAGE_SIZE) {
 		mread = lapic_mmio_read;
 		mwrite = lapic_mmio_write;
 	} else if (gpa >= VIOAPIC_BASE && gpa < VIOAPIC_BASE + VIOAPIC_SIZE) {
@@ -1446,7 +1446,7 @@ restart:
 				error = 0;
 				break;
 			case VM_EXITCODE_HLT:
-				intr_disabled = ((vme->u.hlt.rflags & PSL_I) == 0);
+				intr_disabled = ((vme->u.hlt.rflags & FL_IF) == 0);
 				error = vm_handle_hlt(vm, vcpuid, intr_disabled, &retu);
 				break;
 			case VM_EXITCODE_PAGING:
@@ -1505,7 +1505,7 @@ int vm_exit_intinfo(struct vm *vm, int vcpuid, uint64_t info)
 	if (info & VM_INTINFO_VALID) {
 		type = info & VM_INTINFO_TYPE;
 		vector = info & 0xff;
-		if (type == VM_INTINFO_NMI && vector != IDT_NMI)
+		if (type == VM_INTINFO_NMI && vector != T_NMI)
 			return (EINVAL);
 		if (type == VM_INTINFO_HWEXCEPTION && vector >= 32)
 			return (EINVAL);

@@ -1420,7 +1420,7 @@ void vlapic_init(struct vlapic *vlapic)
 	mtx_init(&vlapic->timer_mtx, "vlapic timer mtx", NULL, MTX_SPIN);
 	callout_init(&vlapic->callout, 1);
 
-	vlapic->msr_apicbase = DEFAULT_APIC_BASE | APICBASE_ENABLED;
+	vlapic->msr_apicbase = LAPIC_BASE | APICBASE_ENABLED;
 
 	if (vlapic->vcpuid == 0)
 		vlapic->msr_apicbase |= APICBASE_BSP;

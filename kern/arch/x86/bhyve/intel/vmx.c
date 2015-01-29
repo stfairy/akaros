@@ -859,7 +859,7 @@ static void *vmx_vminit(struct vm *vm, struct proc *p)
 	vpid_alloc(vpid, VM_MAXCPU);
 
 	if (virtual_interrupt_delivery) {
-		error = vm_map_mmio(vm, DEFAULT_APIC_BASE, PAGE_SIZE,
+		error = vm_map_mmio(vm, LAPIC_BASE, PAGE_SIZE,
 							APIC_ACCESS_ADDRESS);
 		/* XXX this should really return an error to the caller */
 		KASSERT(error == 0, ("vm_map_mmio(apicbase) error %d", error));
@@ -894,7 +894,7 @@ static void *vmx_vminit(struct vm *vm, struct proc *p)
 		if (vcpu_trace_exceptions(vm, i))
 			exc_bitmap = 0xffffffff;
 		else
-			exc_bitmap = 1 << IDT_MC;
+			exc_bitmap = 1 << T_MCHK;
 		error += vmwrite(VMCS_EXCEPTION_BITMAP, exc_bitmap);
 
 		if (virtual_interrupt_delivery) {
@@ -989,7 +989,7 @@ static VMM_STAT_INTEL(VCPU_INVVPID_DONE, "Number of vpid invalidations done");
  * Invalidate guest mappings identified by its vpid from the TLB.
  */
 static __inline void
-vmx_invvpid(struct vmx *vmx, int vcpu, pmap_t pmap, int running)
+vmx_invvpid(struct vmx *vmx, int vcpu, struct proc *p, int running)
 {
 	struct vmxstate *vmxstate;
 	struct invvpid_desc invvpid_desc;
@@ -1027,6 +1027,8 @@ vmx_invvpid(struct vmx *vmx, int vcpu, pmap_t pmap, int running)
 	 * Note also that this will invalidate mappings tagged with 'vpid'
 	 * for "all" EP4TAs.
 	 */
+	panic(__func__);
+#if 0
 	if (pmap->pm_eptgen == vmx->eptgen[hw_core_id()]) {
 		invvpid_desc._res1 = 0;
 		invvpid_desc._res2 = 0;
@@ -1043,9 +1045,10 @@ vmx_invvpid(struct vmx *vmx, int vcpu, pmap_t pmap, int running)
 		 */
 		vmm_stat_incr(vmx->vm, vcpu, VCPU_INVVPID_SAVED, 1);
 	}
+#endif
 }
 
-static void vmx_set_pcpu_defaults(struct vmx *vmx, int vcpu, pmap_t pmap)
+static void vmx_set_pcpu_defaults(struct vmx *vmx, int vcpu, struct proc *p)
 {
 	struct vmxstate *vmxstate;
 
@@ -1060,7 +1063,7 @@ static void vmx_set_pcpu_defaults(struct vmx *vmx, int vcpu, pmap_t pmap)
 	vmcs_write(VMCS_HOST_TR_BASE, vmm_get_host_trbase());
 	vmcs_write(VMCS_HOST_GDTR_BASE, vmm_get_host_gdtrbase());
 	vmcs_write(VMCS_HOST_GS_BASE, vmm_get_host_gsbase());
-	vmx_invvpid(vmx, vcpu, pmap, 1);
+	vmx_invvpid(vmx, vcpu, p, 1);
 }
 
 /*
@@ -1074,7 +1077,7 @@ static void __inline vmx_set_int_window_exiting(struct vmx *vmx, int vcpu)
 	if ((vmx->cap[vcpu].proc_ctls & PROCBASED_INT_WINDOW_EXITING) == 0) {
 		vmx->cap[vcpu].proc_ctls |= PROCBASED_INT_WINDOW_EXITING;
 		vmcs_write(VMCS_PRI_PROC_BASED_CTLS, vmx->cap[vcpu].proc_ctls);
-		VCPU_CTR0(vmx->vm, vcpu, "Enabling interrupt window exiting");
+		printk("VCPU_CTR0(vmx->vm, vcpu, \"Enabling interrupt window exiting\");\n");
 	}
 }
 
@@ -1130,7 +1133,7 @@ static void vmx_inject_nmi(struct vmx *vmx, int vcpu)
 	 * Inject the virtual NMI. The vector must be the NMI IDT entry
 	 * or the VMCS entry check will fail.
 	 */
-	info = IDT_NMI | VMCS_INTR_T_NMI | VMCS_INTR_VALID;
+	info = T_NMI | VMCS_INTR_T_NMI | VMCS_INTR_VALID;
 	vmcs_write(VMCS_ENTRY_INTR_INFO, info);
 
 	VCPU_CTR0(vmx->vm, vcpu, "Injecting vNMI");
@@ -1264,7 +1267,7 @@ vmx_inject_interrupts(struct vmx *vmx, int vcpu, struct vlapic *vlapic,
 
 	/* Check RFLAGS.IF and the interruptibility state of the guest */
 	rflags = vmcs_read(VMCS_GUEST_RFLAGS);
-	if ((rflags & PSL_I) == 0) {
+	if ((rflags & FL_IF) == 0) {
 		VCPU_CTR2(vmx->vm, vcpu, "Cannot inject vector %d due to "
 				  "rflags %#lx", vector, rflags);
 		goto cantinject;
@@ -1369,6 +1372,10 @@ static void vmx_assert_nmi_blocking(struct vmx *vmx, int vcpuid)
 
 static int vmx_emulate_xsetbv(struct vmx *vmx, int vcpu, struct vm_exit *vmexit)
 {
+	// there are bits here we don't have in akaros. Further, it's not clear we'll	
+	// ever care. But in case.
+	panic(__func__);
+#if 0 // AKAROS
 	struct vmxctx *vmxctx;
 	uint64_t xcrval;
 	const struct xsave_limits *limits;
@@ -1440,6 +1447,7 @@ static int vmx_emulate_xsetbv(struct vmx *vmx, int vcpu, struct vm_exit *vmexit)
 	 * host's.
 	 */
 	load_xcr(0, xcrval);
+#endif
 	return (HANDLED);
 }
 
@@ -1758,7 +1766,12 @@ static void vmexit_inst_emul(struct vm_exit *vmexit, uint64_t gpa, uint64_t gla)
 			vmexit->u.inst_emul.cs_d = 0;
 			break;
 	}
+	// My overall inclination is to NOT to emulation. 
+	// But that's not always going to be an option. Still ...
+	panic(__func__);
+#if 0 // AKAROS
 	vie_init(&vmexit->u.inst_emul.vie, NULL, 0);
+#endif
 }
 
 static int ept_fault_type(uint64_t ept_qual)
@@ -1890,7 +1903,7 @@ static bool apic_access_fault(struct vmx *vmx, int vcpuid, uint64_t gpa)
 {
 
 	if (apic_access_virtualization(vmx, vcpuid) &&
-		(gpa >= DEFAULT_APIC_BASE && gpa < DEFAULT_APIC_BASE + PAGE_SIZE))
+		(gpa >= LAPIC_BASE && gpa < LAPIC_BASE + PAGE_SIZE))
 		return (true);
 	else
 		return (false);
@@ -1947,7 +1960,7 @@ vmx_handle_apic_access(struct vmx *vmx, int vcpuid, struct vm_exit *vmexit)
 	}
 
 	if (allowed) {
-		vmexit_inst_emul(vmexit, DEFAULT_APIC_BASE + offset, VIE_INVALID_GLA);
+		vmexit_inst_emul(vmexit, LAPIC_BASE + offset, VIE_INVALID_GLA);
 	}
 
 	/*
@@ -2315,7 +2328,7 @@ static int vmx_exit_process(struct vmx *vmx, int vcpu, struct vm_exit *vmexit)
 			 * Call the machine check handler by hand. Also don't reflect
 			 * the machine check back into the guest.
 			 */
-			if (intr_vec == IDT_MC) {
+			if (intr_vec == T_MCHK) {
 				VCPU_CTR0(vmx->vm, vcpu, "Vectoring to MCE handler");
 				__asm __volatile("int $18");
 				return (1);
@@ -2483,7 +2496,7 @@ vmx_exit_handle_nmi(struct vmx *vmx, int vcpuid, struct vm_exit *vmexit)
 {
 	uint32_t intr_info;
 
-	KASSERT((read_rflags() & PSL_I) == 0, ("interrupts enabled"));
+	KASSERT((read_rflags() & FL_IF) == 0, ("interrupts enabled"));
 
 	if (vmexit->u.vmx.exit_reason != EXIT_REASON_EXCEPTION)
 		return;
@@ -2493,7 +2506,7 @@ vmx_exit_handle_nmi(struct vmx *vmx, int vcpuid, struct vm_exit *vmexit)
 			("VM exit interruption info invalid: %#x", intr_info));
 
 	if ((intr_info & VMCS_INTR_T_MASK) == VMCS_INTR_T_NMI) {
-		KASSERT((intr_info & 0xff) == IDT_NMI, ("VM exit due "
+		KASSERT((intr_info & 0xff) == T_NMI, ("VM exit due "
 												"to NMI has invalid vector: %#x",
 												intr_info));
 		VCPU_CTR0(vmx->vm, vcpuid, "Vectoring to NMI handler");
@@ -2647,7 +2660,7 @@ static void vmx_vmcleanup(void *arg)
 	struct vmx *vmx = arg;
 
 	if (apic_access_virtualization(vmx, 0))
-		vm_unmap_mmio(vmx->vm, DEFAULT_APIC_BASE, PAGE_SIZE);
+		vm_unmap_mmio(vmx->vm, LAPIC_BASE, PAGE_SIZE);
 
 	for (i = 0; i < VM_MAXCPU; i++)
 		vpid_free(vmx->state[i].vpid);
@@ -3177,7 +3190,7 @@ static void vmx_enable_x2apic_mode(struct vlapic *vlapic)
 		 * The nested page table mappings are shared by all vcpus
 		 * so unmap the APIC access page just once.
 		 */
-		error = vm_unmap_mmio(vmx->vm, DEFAULT_APIC_BASE, PAGE_SIZE);
+		error = vm_unmap_mmio(vmx->vm, LAPIC_BASE, PAGE_SIZE);
 		KASSERT(error == 0, ("%s: vm_unmap_mmio error %d", __func__, error));
 
 		/*

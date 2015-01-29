@@ -199,7 +199,7 @@ lapic_mmio_write(void *vm, int cpu, uint64_t gpa, uint64_t wval, int size,
 	uint64_t off;
 	struct vlapic *vlapic;
 
-	off = gpa - DEFAULT_APIC_BASE;
+	off = gpa - LAPIC_BASE;
 
 	/*
 	 * Memory mapped local apic accesses must be 4 bytes wide and
@@ -221,7 +221,7 @@ lapic_mmio_read(void *vm, int cpu, uint64_t gpa, uint64_t * rval, int size,
 	uint64_t off;
 	struct vlapic *vlapic;
 
-	off = gpa - DEFAULT_APIC_BASE;
+	off = gpa - LAPIC_BASE;
 
 	/*
 	 * Memory mapped local apic accesses should be aligned on a

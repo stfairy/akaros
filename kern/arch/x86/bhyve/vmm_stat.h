@@ -56,6 +56,8 @@ struct vmm_stat_type {
 
 void vmm_stat_register(void *arg);
 
+// AKAROS
+#define SYSINIT(stat, KLD, ORDER, reg, type) 
 #define	VMM_STAT_FDEFINE(type, nelems, desc, func, scope)		\
 	struct vmm_stat_type type[1] = {				\
 		{ -1, nelems, desc, func, scope }			\
@@ -68,8 +70,8 @@ void vmm_stat_register(void *arg);
 #define	VMM_STAT_DECLARE(type)						\
 	extern struct vmm_stat_type type[1]
 
-/*#define	VMM_STAT(type, desc)				
-  VMM_STAT_DEFINE(type, 1, desc, VMM_STAT_SCOPE_ANY)*/
+#define	VMM_STAT(type, desc)				\
+  VMM_STAT_DEFINE(type, 1, desc, VMM_STAT_SCOPE_ANY)
 #define	VMM_STAT_INTEL(type, desc)	\
 	VMM_STAT_DEFINE(type, 1, desc, VMM_STAT_SCOPE_INTEL)
 #define	VMM_STAT_AMD(type, desc)	\

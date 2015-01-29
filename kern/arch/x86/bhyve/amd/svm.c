@@ -433,7 +433,7 @@ vmcb_init(struct svm_softc *sc, int vcpu, uint64_t iopm_base_pa,
 			svm_enable_intercept(sc, vcpu, VMCB_EXC_INTCPT, BIT(n));
 		}
 	} else {
-		svm_enable_intercept(sc, vcpu, VMCB_EXC_INTCPT, BIT(IDT_MC));
+		svm_enable_intercept(sc, vcpu, VMCB_EXC_INTCPT, BIT(T_MCHK));
 	}
 
 	/* Intercept various events (for e.g. I/O, MSR and CPUID accesses) */
@@ -1226,7 +1226,7 @@ svm_vmexit(struct svm_softc *svm_sc, int vcpu, struct vm_exit *vmexit)
 			reflect = 1;
 			idtvec = code - 0x40;
 			switch (idtvec) {
-				case IDT_MC:
+				case T_MCHK:
 					/*
 					 * Call the machine check handler by hand. Also don't
 					 * reflect the machine check back into the guest.
@@ -1499,7 +1499,7 @@ svm_inj_interrupts(struct svm_softc *sc, int vcpu, struct vlapic *vlapic)
 
 			/* Inject NMI, vector number is not used */
 			svm_eventinject(sc, vcpu, VMCB_EVENTINJ_TYPE_NMI,
-							IDT_NMI, 0, false);
+							T_NMI, 0, false);
 
 			/* virtual NMI blocking is now in effect */
 			enable_nmi_blocking(sc, vcpu);
@@ -1546,7 +1546,7 @@ svm_inj_interrupts(struct svm_softc *sc, int vcpu, struct vlapic *vlapic)
 	 * If the guest has disabled interrupts or is in an interrupt shadow
 	 * then we cannot inject the pending interrupt.
 	 */
-	if ((state->rflags & PSL_I) == 0) {
+	if ((state->rflags & FL_IF) == 0) {
 		VCPU_CTR2(sc->vm, vcpu, "Cannot inject vector %d due to "
 				  "rflags %#lx", vector, state->rflags);
 		need_intr_window = 1;
@@ -1629,7 +1629,7 @@ done:
 		 * be delivered on VM entry. The KASSERT below enforces this.
 		 */
 		KASSERT((ctrl->eventinj & VMCB_EVENTINJ_VALID) != 0 ||
-				(state->rflags & PSL_I) == 0 || ctrl->intr_shadow,
+				(state->rflags & FL_IF) == 0 || ctrl->intr_shadow,
 				("Bogus intr_window_exiting: eventinj (%#lx), "
 				 "intr_shadow (%u), rflags (%#lx)",
 				 ctrl->eventinj, ctrl->intr_shadow, state->rflags));

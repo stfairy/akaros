@@ -22,6 +22,9 @@ sed -i 's/IA32_FEATURE_CONTROL_VMX_EN/FEATURE_CONTROL_VMXON_ENABLED_OUTSIDE_SMX/
 sed -i 's/IDT_BP/T_BRKPT/g' $*
 sed -i 's/IDT_OF/T_OFLOW/g' $*
 sed -i 's/IDT_BR/T_BOUND/g' $*
+sed -i 's/IDT_MC/T_MCHK/g' $*
+sed -i 's/IDT_NMI/T_NMI/g' $*
+sed -i 's/PSL_I/FL_IF/g' $*
 
 
 sed -i 's/MSR_GSBASE/MSR_GS_BASE/g' $*
@@ -33,3 +36,4 @@ sed -i 's/MSR_SYSENTER_EIP_MSR/MSR_IA32_SYSENTER_EIP/g' $*
 sed -i 's/MSR_EFER/MSR_EFER/g' $*
 sed -i 's/MSR_TSC/MSR_IA32_TSC/g' $*
 sed -i 's/MSR_SF_MASK/MSR_SYSCALL_MASK/g' $*
+sed -i 's/DEFAULT_APIC_BASE/LAPIC_BASE/g' $*

@@ -30,6 +30,7 @@
 #define	_VMM_KTR_H_
 
 //TODO: fix for akaros tracing.
+#if 0 // AKAROS
 #ifndef KTR_VMM
 #define	KTR_VMM	KTR_GEN
 #endif
@@ -64,4 +65,18 @@ CTR4(KTR_VMM, "vm %s: " format, vm_name((vm)), (p1), (p2), (p3))
 
 #define	VM_CTR4(vm, format, p1, p2, p3, p4)				\
 CTR5(KTR_VMM, "vm %s: " format, vm_name((vm)), (p1), (p2), (p3), (p4))
+#endif
+
+#define	KTR_VMM	1
+#define	VCPU_CTR0(vm, vcpuid, format)					
+#define	VCPU_CTR1(vm, vcpuid, format, p1)				
+#define	VCPU_CTR2(vm, vcpuid, format, p1, p2)				
+#define	VCPU_CTR3(vm, vcpuid, format, p1, p2, p3)			
+#define	VCPU_CTR4(vm, vcpuid, format, p1, p2, p3, p4)			
+#define	VM_CTR0(vm, format)						
+#define	VM_CTR1(vm, format, p1)						
+#define	VM_CTR2(vm, format, p1, p2)					
+#define	VM_CTR3(vm, format, p1, p2, p3)					
+#define	VM_CTR4(vm, format, p1, p2, p3, p4)				
+
 #endif
