@@ -31,6 +31,7 @@
 #include <pmap.h>
 #include <smp.h>
 #include <kmalloc.h>
+#include <bitops.h>
 #include "../vmm_lapic.h"
 #include "../vmm_host.h"
 #include "../vmm_ioport.h"

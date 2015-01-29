@@ -156,14 +156,13 @@ struct vlapic;
 struct vmspace;
 struct vm_object;
 struct vm_guest_paging;
-struct pmap;
 
 typedef int	(*vmm_init_func_t)(int ipinum);
 typedef int	(*vmm_cleanup_func_t)(void);
 typedef void	(*vmm_resume_func_t)(void);
-typedef void *	(*vmi_init_func_t)(struct vm *vm, struct pmap *pmap);
+typedef void *	(*vmi_init_func_t)(struct vm *vm, struct proc *p);
 typedef int	(*vmi_run_func_t)(void *vmi, int vcpu, register_t rip,
-				  struct pmap *pmap, void *rendezvous_cookie,
+				  struct proc *p, void *rendezvous_cookie,
 				  void *suspend_cookie);
 typedef void	(*vmi_cleanup_func_t)(void *vmi);
 typedef int	(*vmi_get_register_t)(void *vmi, int vcpu, int num,
@@ -315,6 +314,14 @@ vcpu_should_yield(struct vm *vm, int vcpu)
 	return (curthread->td_flags & (TDF_ASTPENDING | TDF_NEEDRESCHED));
 }
 #endif
+// AKAROS
+
+// we don't yield. I don't think.
+static int __inline
+vcpu_should_yield(struct vm *vm, int vcpu)
+{
+	return 0;
+}
 
 void *vcpu_stats(struct vm *vm, int vcpu);
 void vcpu_notify_event(struct vm *vm, int vcpuid, bool lapic_intr);
