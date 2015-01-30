@@ -52,3 +52,4 @@ sed -i 's/\([^\.]\)tsc_freq/\1system_timing.tsc_freq/g' $*
 sed -i 's/struct  *mtx/qlock_t/g' $*
 sed -i 's/struct  *savefpu/struct ancillary_state/g' $*
 
+sed -i 's/MSR_APICBASE/MSR_IA32_APICBASE/g' $*

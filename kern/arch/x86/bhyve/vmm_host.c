@@ -26,6 +26,7 @@
  * $FreeBSD$
  */
 
+#include <env.h>
 #include <arch/vmm.h>
 #include <error.h>
 #include <pmap.h>

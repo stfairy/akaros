@@ -26,21 +26,20 @@
  * $FreeBSD$
  */
 
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
+#include <env.h>
+#include <arch/vmm.h>
+#include <arch/apic.h>
+#include <error.h>
+#include <pmap.h>
+#include <smp.h>
+#include <trap.h>
+#include <kmalloc.h>
+#include <arch/vmm.h>
 
-#include <sys/param.h>
-#include <sys/systm.h>
-#include <sys/smp.h>
-
-#include <x86/specialreg.h>
-#include <x86/apicreg.h>
-
-#include <machine/vmm.h>
 #include "vmm_ipi.h"
 #include "vmm_ktr.h"
 #include "vmm_lapic.h"
-#include "vlapic.h"
+#include "io/vlapic.h"
 
 /*
  * Some MSI message definitions
@@ -66,6 +65,7 @@ int lapic_set_intr(struct vm *vm, int cpu, int vector, bool level)
 	return (0);
 }
 
+
 int lapic_set_local_intr(struct vm *vm, int cpu, int vector)
 {
 	struct vlapic *vlapic;
@@ -75,6 +75,14 @@ int lapic_set_local_intr(struct vm *vm, int cpu, int vector)
 	if (cpu < -1 || cpu >= VM_MAXCPU)
 		return (EINVAL);
 
+	if (cpu == -1) {
+		printk("AKAROS: not doing ALL cpus in %s\n", __func__);
+		return(EINVAL);
+	}
+	vlapic = vm_lapic(vm, cpu);
+	error = vlapic_trigger_lvt(vlapic, vector);
+		
+#if 0 // AKAROS	
 	if (cpu == -1)
 		dmask = vm_active_cpus(vm);
 	else
@@ -88,7 +96,7 @@ int lapic_set_local_intr(struct vm *vm, int cpu, int vector)
 		if (error)
 			break;
 	}
-
+#endif
 	return (error);
 }
 
@@ -119,7 +127,7 @@ int lapic_intr_msi(struct vm *vm, uint64_t addr, uint64_t msg)
 	dest = (addr >> 12) & 0xff;
 	phys = ((addr & (MSI_X86_ADDR_RH | MSI_X86_ADDR_LOG)) !=
 			(MSI_X86_ADDR_RH | MSI_X86_ADDR_LOG));
-	delmode = msg & APIC_DELMODE_MASK;
+	delmode = msg & MTmask;
 	vec = msg & 0xff;
 
 	VM_CTR3(vm, "lapic MSI %s dest %#x, vec %d",
@@ -146,7 +154,7 @@ static unsigned int x2apic_msr_to_regoff(unsigned int msr)
 bool lapic_msr(unsigned int msr)
 {
 
-	if (x2apic_msr(msr) || (msr == MSR_APICBASE))
+	if (x2apic_msr(msr) || (msr == MSR_IA32_APICBASE))
 		return (TRUE);
 	else
 		return (FALSE);
@@ -161,7 +169,7 @@ int lapic_rdmsr(struct vm *vm, int cpu, unsigned int msr, uint64_t * rval,
 
 	vlapic = vm_lapic(vm, cpu);
 
-	if (msr == MSR_APICBASE) {
+	if (msr == MSR_IA32_APICBASE) {
 		*rval = vlapic_get_apicbase(vlapic);
 		error = 0;
 	} else {
@@ -181,7 +189,7 @@ int lapic_wrmsr(struct vm *vm, int cpu, unsigned int msr, uint64_t val,
 
 	vlapic = vm_lapic(vm, cpu);
 
-	if (msr == MSR_APICBASE) {
+	if (msr == MSR_IA32_APICBASE) {
 		error = vlapic_set_apicbase(vlapic, val);
 	} else {
 		offset = x2apic_msr_to_regoff(msr);

@@ -287,7 +287,7 @@ enum {
  * [16] Interrupt Mask
  */
 enum {
-	MTf = 0x00000000,			/* Fixed */
+	MTf = 0x00000000,	 /* Fixed */
 	MTlp = 0x00000100,	/* Lowest Priority */
 	MTsmi = 0x00000200,	/* SMI */
 	MTrr = 0x00000300,	/* Remote Read */
@@ -295,6 +295,7 @@ enum {
 	MTir = 0x00000500,	/* INIT/RESET */
 	MTsipi = 0x00000600,	/* Startup IPI */
 	MTei = 0x00000700,	/* ExtINT */
+	MTmask = 0x00000700,    /* Delivery mode mask */
 
 	Pm = 0x00000000,	/* Physical Mode */
 	Lm = 0x00000800,	/* Logical Mode */

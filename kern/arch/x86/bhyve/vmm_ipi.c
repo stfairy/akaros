@@ -26,20 +26,6 @@
  * $FreeBSD$
  */
 
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
-
-#include <sys/param.h>
-#include <sys/systm.h>
-#include <sys/proc.h>
-#include <sys/bus.h>
-
-#include <machine/intr_machdep.h>
-#include <x86/apicvar.h>
-#include <machine/segments.h>
-#include <machine/md_var.h>
-
-#include <machine/vmm.h>
 #include "vmm_ipi.h"
 
 extern inthand_t IDTVEC(rsvd), IDTVEC(justreturn);
