@@ -3212,7 +3212,7 @@ static void vmx_enable_x2apic_mode(struct vlapic *vlapic)
 static void vmx_post_intr(struct vlapic *vlapic, int hostcpu)
 {
 
-	ipi_cpu(hostcpu, pirvec);
+	send_ipi(hostcpu, pirvec);
 }
 
 /*

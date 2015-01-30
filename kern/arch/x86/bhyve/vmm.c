@@ -2038,7 +2038,7 @@ void vcpu_notify_event(struct vm *vm, int vcpuid, bool lapic_intr)
 			if (lapic_intr) {
 				vlapic_post_intr(vcpu->vlapic, hostcpu, vmm_ipinum);
 			} else {
-				ipi_cpu(hostcpu, vmm_ipinum);
+				send_ipi(hostcpu, vmm_ipinum);
 			}
 		} else {
 			/*

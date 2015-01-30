@@ -1493,7 +1493,7 @@ svm_inj_interrupts(struct svm_softc *sc, int vcpu, struct vlapic *vlapic)
 			 * Although not explicitly specified in APMv2 the
 			 * relative priorities were verified empirically.
 			 */
-			ipi_cpu(hw_core_id(), IPI_AST);	/* XXX vmm_ipinum? */
+			send_ipi(hw_core_id(), IPI_AST);	/* XXX vmm_ipinum? */
 		} else {
 			vm_nmi_clear(sc->vm, vcpu);
 

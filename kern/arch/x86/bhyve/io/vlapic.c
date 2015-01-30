@@ -1533,7 +1533,7 @@ void vlapic_post_intr(struct vlapic *vlapic, int hostcpu, int ipinum)
 	if (vlapic->ops.post_intr)
 		(*vlapic->ops.post_intr) (vlapic, hostcpu);
 	else
-		ipi_cpu(hostcpu, ipinum);
+		send_ipi(hostcpu, ipinum);
 }
 
 bool vlapic_enabled(struct vlapic *vlapic)
