@@ -231,7 +231,7 @@ static void vcpu_init(struct vm *vm, int vcpu_id, bool create)
 #if 0 // AKAROS
 	vcpu->guest_xcr0 = XFEATURE_ENABLED_X87;
 #endif
-	panic("%s %p ", __func__, vcpu->guestfpu);
+	memmove(vcpu->guestfpu, &x86_default_fpu, sizeof(x86_default_fpu));
 	vmm_stat_init(vcpu->stats);
 }
 
@@ -284,6 +284,7 @@ static int vmm_init(void)
 	return (VMM_INIT(vmm_ipinum));
 }
 
+#if 0 // AKAROS -- uh, what's a module? You want to unload, just reboot, dummy!
 static int vmm_handler(module_t mod, int what, void *arg)
 {
 	int error;
@@ -337,6 +338,7 @@ static moduledata_t vmm_kmod = {
  */
 DECLARE_MODULE(vmm, vmm_kmod, SI_SUB_SMP + 1, SI_ORDER_ANY);
 MODULE_VERSION(vmm, 1);
+#endif
 
 static void vm_init(struct vm *vm, bool create)
 {
@@ -2188,7 +2190,7 @@ vm_copy_setup(struct vm *vm, int vcpuid, struct vm_guest_paging *paging,
 		if (error)
 			return (error);
 		off = gpa & PAGE_MASK;
-		n = min(remaining, PAGE_SIZE - off);
+		n = MIN(remaining, PAGE_SIZE - off);
 		copyinfo[nused].gpa = gpa;
 		copyinfo[nused].len = n;
 		remaining -= n;

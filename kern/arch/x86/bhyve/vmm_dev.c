@@ -116,7 +116,7 @@ static int vmmdev_rw(struct cdev *cdev, struct uio *uio, int flags)
 	while (uio->uio_resid > 0 && error == 0) {
 		gpa = uio->uio_offset;
 		off = gpa & PAGE_MASK;
-		c = min(uio->uio_resid, PAGE_SIZE - off);
+		c = MIN(uio->uio_resid, PAGE_SIZE - off);
 
 		/*
 		 * The VM has a hole in its physical memory map. If we want to

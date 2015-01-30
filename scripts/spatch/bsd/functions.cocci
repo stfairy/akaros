@@ -71,7 +71,16 @@ E
 +kmalloc(sizeof(struct ancillary_state), KMALLOC_WAIT)
 
 @@
+	expression E;
 @@
 -fpu_save_area_reset(
-+panic(
++memmove(
+E
++ , &x86_default_fpu, sizeof(x86_default_fpu)
+ )
+
+@@
+@@
+-min(
++MIN(
  ...)
