@@ -84,3 +84,9 @@ E
 -min(
 +MIN(
  ...)
+
+@would_rather_panic@
+@@
+-ipi_cpu(
++send_ipi(
+  ...)

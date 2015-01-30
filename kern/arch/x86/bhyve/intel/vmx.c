@@ -25,7 +25,7 @@
  *
  * $FreeBSD$
  */
-
+#include <env.h>
 #include <arch/vmm.h>
 #include <error.h>
 #include <pmap.h>
@@ -3092,7 +3092,7 @@ static int vmx_pending_intr(struct vlapic *vlapic, int *vecptr)
 	struct pir_desc *pir_desc;
 	struct LAPIC *lapic;
 	uint64_t pending;
-	atomic_t pirval;
+	uint64_t pirval;
 	uint32_t ppr, vpr;
 	int i;
 
@@ -3125,7 +3125,7 @@ static int vmx_pending_intr(struct vlapic *vlapic, int *vecptr)
 			  lapic->ppr);
 
 	for (i = 3; i >= 0; i--) {
-		pirval = pir_desc->pir[i];
+		pirval = atomic_read(pir_desc->pir[i]);
 		if (pirval != 0) {
 			vpr = (i * 64 + fls64(pirval) - 1) & 0xf0;
 			return (vpr > ppr);
