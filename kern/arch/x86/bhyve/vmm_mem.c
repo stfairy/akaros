@@ -54,12 +54,12 @@ int vmm_mem_init(void)
 	return (0);
 }
 
-vm_object_t
+struct vm_region *
 vmm_mmio_alloc(struct vmspace * vmspace, vm_paddr_t gpa, size_t len,
 			   vm_paddr_t hpa)
 {
 	int error;
-	vm_object_t obj;
+	struct vm_region *obj;
 	struct sglist *sg;
 
 	sg = sglist_alloc(1, M_WAITOK);
@@ -111,10 +111,10 @@ void vmm_mmio_free(struct vmspace *vmspace, vm_paddr_t gpa, size_t len)
 	vm_map_remove(&vmspace->vm_map, gpa, gpa + len);
 }
 
-vm_object_t vmm_mem_alloc(struct vmspace *vmspace, vm_paddr_t gpa, size_t len)
+struct vm_region *vmm_mem_alloc(struct vmspace *vmspace, vm_paddr_t gpa, size_t len)
 {
 	int error;
-	vm_object_t obj;
+	struct vm_region *obj;
 
 	if (gpa & PAGE_MASK)
 		panic("vmm_mem_alloc: invalid gpa %#lx", gpa);

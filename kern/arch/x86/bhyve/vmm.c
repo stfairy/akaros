@@ -32,6 +32,7 @@
 #include <smp.h>
 #include <trap.h>
 #include <kmalloc.h>
+#include <arch/vmm.h>
 #include "vmm_host.h"
 #include "vmm_dev.h"
 
@@ -92,7 +93,7 @@ struct mem_seg {
 	vm_paddr_t gpa;
 	size_t len;
 	bool wired;
-	vm_object_t object;
+	struct vm_region *object;
 };
 #define	VM_MAX_MEMORY_SEGMENTS	2
 
@@ -162,12 +163,15 @@ static struct vmm_ops *ops;
 #define	fpu_start_emulating()	load_cr0(rcr0() | CR0_TS)
 #define	fpu_stop_emulating()	clts()
 
+#if 0 // AKAROS
+//We don't have buckets and pools, right?
 static MALLOC_DEFINE(M_VM, "vm", "vm");
 
 /* statistics */
 static VMM_STAT(VCPU_TOTAL_RUNTIME, "vcpu total runtime");
 
 SYSCTL_NODE(_hw, OID_AUTO, vmm, CTLFLAG_RW, NULL, NULL);
+#endif
 
 /*
  * Halt the guest if all vcpus are executing a HLT instruction with
@@ -1867,6 +1871,8 @@ struct vhpet *vm_hpet(struct vm *vm)
 
 bool vmm_is_pptdev(int bus, int slot, int func)
 {
+	panic(__func__);
+#if 0 // AKAROS. passthrough devices? In your dreams.
 	int found, i, n;
 	int b, s, f;
 	char *val, *cp, *cp2;
@@ -1904,6 +1910,7 @@ bool vmm_is_pptdev(int bus, int slot, int func)
 		freeenv(val);
 	}
 	return (found);
+#endif
 }
 
 void *vm_iommu_domain(struct vm *vm)

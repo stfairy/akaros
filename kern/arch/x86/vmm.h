@@ -58,6 +58,9 @@ typedef uint64_t cpuset_t;
 #define NOCPU (-1)
 #define __predict_false(x) (x)
 
+// mtx_init has additional info and I'm not yet sure we don't want it.
+#define mtx_init(a,b,c,d) qlock_init((a))
+
 #define bootverbose 1
 // TODO: make this work even out of a function.
 #undef static_assert

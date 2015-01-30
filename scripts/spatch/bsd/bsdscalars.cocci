@@ -17,3 +17,9 @@ typedef uint32_t;
 -u_int32_t
 +uint32_t
 
+@vm_object_t@
+typedef vm_object_t;
+@@
+-vm_object_t
++struct vm_region *
+
