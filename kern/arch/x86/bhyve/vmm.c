@@ -2080,7 +2080,9 @@ vm_smp_rendezvous(struct vm *vm, int vcpuid, cpuset_t dest,
 	/*
 	 * Enforce that this function is called without any locks
 	 */
+#if 0 // AKAROS -- someday we might want this.
 	WITNESS_WARN(WARN_PANIC, NULL, "vm_smp_rendezvous");
+#endif
 	KASSERT(vcpuid == -1 || (vcpuid >= 0 && vcpuid < VM_MAXCPU),
 			("vm_smp_rendezvous: invalid vcpuid %d", vcpuid));
 
