@@ -388,7 +388,7 @@ int vm_create(const char *name, struct vm **retvm)
 	vm->vmspace = vmspace;
 	mtx_init(&vm->rendezvous_mtx, "vm rendezvous lock", 0, MTX_DEF);
 
-	vm_init(vm, true);
+	virt_init(vm, true);
 
 	*retvm = vm;
 	return (0);
@@ -453,7 +453,7 @@ int vm_reinit(struct vm *vm)
 	 */
 	if (CPU_CMP(&vm->suspended_cpus, &vm->active_cpus) == 0) {
 		vm_cleanup(vm, false);
-		vm_init(vm, false);
+		virt_init(vm, false);
 		error = 0;
 	} else {
 		error = EBUSY;

@@ -108,3 +108,8 @@ identifier rulebcopy.f;
 + memmove(TO, FROM, SIZE
    )
 
+@@
+@@
+-vm_init(
++virt_init(
+...)
