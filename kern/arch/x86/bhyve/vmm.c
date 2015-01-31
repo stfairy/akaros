@@ -1541,11 +1541,11 @@ static enum exc_class exception_class(uint64_t info)
 		case T_PGFLT:
 		case IDT_VE:
 			return (EXC_PAGEFAULT);
-		case IDT_DE:
-		case IDT_TS:
-		case IDT_NP:
+		case T_DIVIDE:
+		case T_TSS:
+		case T_SEGNP:
 		case IDT_SS:
-		case IDT_GP:
+		case T_GPFLT:
 			return (EXC_CONTRIBUTORY);
 		default:
 			return (EXC_BENIGN);

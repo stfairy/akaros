@@ -1240,11 +1240,11 @@ svm_vmexit(struct svm_softc *svm_sc, int vcpu, struct vm_exit *vmexit)
 					KASSERT(error == 0, ("%s: error %d updating cr2",
 										 __func__, error));
 					/* fallthru */
-				case IDT_NP:
+				case T_SEGNP:
 				case IDT_SS:
-				case IDT_GP:
+				case T_GPFLT:
 				case IDT_AC:
-				case IDT_TS:
+				case T_TSS:
 					errcode_valid = 1;
 					break;
 
