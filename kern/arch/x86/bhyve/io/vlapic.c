@@ -784,13 +784,13 @@ void vlapic_icrtmr_write_handler(struct vlapic *vlapic)
  * or xAPIC (8-bit) destination field.
  */
 static void
-vlapic_calcdest(struct vm *vm, cpuset_t * dmask, uint32_t dest, bool phys,
+vlapic_calcdest(struct vm *vm, checklist_mask_t * dmask, uint32_t dest, bool phys,
 				bool lowprio, bool x2apic_dest)
 {
 	struct vlapic *vlapic;
 	uint32_t dfr, ldr, ldest, cluster;
 	uint32_t mda_flat_ldest, mda_cluster_ldest, mda_ldest, mda_cluster_id;
-	cpuset_t amask;
+	checklist_mask_t amask;
 	int vcpuid;
 
 	if ((x2apic_dest && dest == 0xffffffff) || (!x2apic_dest && dest == 0xff)) {
@@ -921,7 +921,7 @@ int vlapic_icrlo_write_handler(struct vlapic *vlapic, bool * retu)
 {
 	int i;
 	bool phys;
-	cpuset_t dmask;
+	checklist_mask_t dmask;
 	uint64_t icrval;
 	uint32_t dest, vec, mode;
 	struct vlapic *vlapic2;
@@ -1381,7 +1381,7 @@ static void vlapic_reset(struct vlapic *vlapic)
 	struct LAPIC *lapic;
 
 	lapic = vlapic->apic_page;
-	bzero(lapic, sizeof(struct LAPIC));
+	memset(lapic, 0, sizeof(struct LAPIC));
 
 	lapic->id = vlapic_get_id(vlapic);
 	lapic->version = VLAPIC_VERSION;
@@ -1492,7 +1492,7 @@ vlapic_deliver_intr(struct vm *vm, bool level, uint32_t dest, bool phys,
 {
 	bool lowprio;
 	int vcpuid;
-	cpuset_t dmask;
+	checklist_mask_t dmask;
 
 	if (delmode != IOART_DELFIXED &&
 		delmode != IOART_DELLOPRI && delmode != IOART_DELEXINT) {
@@ -1580,7 +1580,7 @@ void
 vlapic_set_tmr_level(struct vlapic *vlapic, uint32_t dest, bool phys,
 					 int delmode, int vector)
 {
-	cpuset_t dmask;
+	checklist_mask_t dmask;
 	bool lowprio;
 
 	KASSERT(vector >= 0 && vector <= 255, ("invalid vector %d", vector));

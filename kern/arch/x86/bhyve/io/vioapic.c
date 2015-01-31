@@ -297,7 +297,7 @@ vioapic_write(struct vioapic *vioapic, int vcpuid, uint32_t addr, uint32_t data)
 	uint64_t data64, mask64;
 	uint64_t last, changed;
 	int regnum, pin, lshift;
-	cpuset_t allvcpus;
+	checklist_mask_t allvcpus;
 
 	regnum = addr & 0xff;
 	switch (regnum) {

@@ -634,7 +634,7 @@ static void vtd_free_ptp(uint64_t * ptp, int level)
 		}
 	}
 
-	bzero(ptp, PAGE_SIZE);
+	memset(ptp, 0, PAGE_SIZE);
 	kfree(ptp);
 }
 

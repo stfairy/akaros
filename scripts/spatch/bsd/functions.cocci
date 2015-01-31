@@ -108,8 +108,34 @@ identifier rulebcopy.f;
 + memmove(TO, FROM, SIZE
    )
 
+@rulebzero@
+identifier f;
+type T;
+	expression TO, SIZE;
+@@
+T f(...){<...
+bzero(TO, SIZE);
+...>}
+@@
+identifier rulebzero.f;
+	expression TO, SIZE;
+@@
+- bzero(TO, SIZE
++ memset(TO, 0,  SIZE
+   )
+
 @@
 @@
 -vm_init(
 +virt_init(
 ...)
+
+@@
+expression TO, FROM;
+@@
+-strcpy(
++ strncpy(
+TO, FROM
++ , sizeof(TO)
+ )
+

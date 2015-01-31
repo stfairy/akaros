@@ -198,7 +198,7 @@ static void ppt_unmap_mmio(struct vm *vm, struct pptdev *ppt)
 		if (seg->len == 0)
 			continue;
 		(void)vm_unmap_mmio(vm, seg->gpa, seg->len);
-		bzero(seg, sizeof(struct vm_memory_segment));
+		memset(seg, 0, sizeof(struct vm_memory_segment));
 	}
 }
 

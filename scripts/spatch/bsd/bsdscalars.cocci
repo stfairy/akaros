@@ -23,3 +23,8 @@ typedef vm_object_t;
 -vm_object_t
 +struct vm_region *
 
+@cpuset@
+@@
+-cpuset_t
++checklist_mask_t
+

@@ -58,3 +58,7 @@ sed -i 's/struct  *mtx/qlock_t/g' $*
 sed -i 's/struct  *savefpu/struct ancillary_state/g' $*
 
 sed -i 's/MSR_APICBASE/MSR_IA32_APICBASE/g' $*
+# cocci just can't do it. Don't know why.
+
+sed -i 's/volatile cpuset_t/checklist_mask_t/g' $*
+sed -i 's/cpuset_t/checklist_mask_t/g' $*

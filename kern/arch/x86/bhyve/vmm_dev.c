@@ -145,7 +145,7 @@ vmmdev_ioctl(struct cdev *cdev, unsigned long cmd, caddr_t data, int fflag,
 			 struct thread *td)
 {
 	int error, vcpu, state_changed, size;
-	cpuset_t *cpuset;
+	checklist_mask_t *cpuset;
 	struct vmmdev_softc *sc;
 	struct vm_memory_segment *seg;
 	struct vm_register *vmreg;
@@ -453,7 +453,7 @@ vmmdev_ioctl(struct cdev *cdev, unsigned long cmd, caddr_t data, int fflag,
 			error = 0;
 			vm_cpuset = (struct vm_cpuset *)data;
 			size = vm_cpuset->cpusetsize;
-			if (size < sizeof(cpuset_t) || size > CPU_MAXSIZE / NBBY) {
+			if (size < sizeof(checklist_mask_t) || size > CPU_MAXSIZE / NBBY) {
 				error = ERANGE;
 				break;
 			}

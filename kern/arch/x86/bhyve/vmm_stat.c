@@ -112,7 +112,7 @@ void *vmm_stat_alloc(void)
 void vmm_stat_init(void *vp)
 {
 
-	bzero(vp, vst_size);
+	memset(vp, 0, vst_size);
 }
 
 void vmm_stat_free(void *vp)

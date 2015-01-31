@@ -112,12 +112,12 @@ struct vm {
 	struct vatpit *vatpit;		/* (i) virtual atpit */
 	struct vpmtmr *vpmtmr;		/* (i) virtual ACPI PM timer */
 	struct vrtc *vrtc;			/* (o) virtual RTC */
-	volatile cpuset_t active_cpus;	/* (i) active vcpus */
+	checklist_mask_t active_cpus;	/* (i) active vcpus */
 	int suspend;				/* (i) stop VM execution */
-	volatile cpuset_t suspended_cpus;	/* (i) suspended vcpus */
-	volatile cpuset_t halted_cpus;	/* (x) cpus in a hard halt */
-	cpuset_t rendezvous_req_cpus;	/* (x) rendezvous requested */
-	cpuset_t rendezvous_done_cpus;	/* (x) rendezvous finished */
+	checklist_mask_t suspended_cpus;	/* (i) suspended vcpus */
+	checklist_mask_t halted_cpus;	/* (x) cpus in a hard halt */
+	checklist_mask_t rendezvous_req_cpus;	/* (x) rendezvous requested */
+	checklist_mask_t rendezvous_done_cpus;	/* (x) rendezvous finished */
 	void *rendezvous_arg;		/* (x) rendezvous func/arg */
 	vm_rendezvous_func_t rendezvous_func;
 	qlock_t rendezvous_mtx;	/* (o) rendezvous lock */
@@ -279,7 +279,9 @@ static int vmm_init(void)
 	else
 		return (ENXIO);
 
+#if 0 // AKAROS -- not sure what to do here, it's a BSD thing.
 	vmm_resume_p = vmm_resume;
+#endif
 
 	return (VMM_INIT(vmm_ipinum));
 }
@@ -336,6 +338,7 @@ static moduledata_t vmm_kmod = {
  * - VT-x initialization requires smp_rendezvous() and therefore must happen
  *   after SMP is fully functional (after SI_SUB_SMP).
  */
+/* AKAROS: let's ignore VT-x for now */
 DECLARE_MODULE(vmm, vmm_kmod, SI_SUB_SMP + 1, SI_ORDER_ANY);
 MODULE_VERSION(vmm, 1);
 #endif
@@ -354,10 +357,10 @@ static void virt_init(struct vm *vm, bool create)
 	if (create)
 		vm->vrtc = vrtc_init(vm);
 
-	CPU_ZERO(&vm->active_cpus);
+	vm->active_cpus = DEFAULT_CHECKLIST(MAX_NUM_CPUS);
 
 	vm->suspend = 0;
-	CPU_ZERO(&vm->suspended_cpus);
+	vm->suspended_cpus = DEFAULT_CHECKLIST(MAX_NUM_CPUS);
 
 	for (i = 0; i < VM_MAXCPU; i++)
 		vcpu_init(vm, i, create);
@@ -383,7 +386,7 @@ int vm_create(const char *name, struct vm **retvm)
 		return (ENOMEM);
 
 	vm = kzmalloc(sizeof(struct vm), KMALLOC_WAIT);
-	strcpy(vm->name, name);
+	strncpy(vm->name, name, sizeof(vm->name));
 	vm->num_mem_segs = 0;
 	vm->vmspace = vmspace;
 	mtx_init(&vm->rendezvous_mtx, "vm rendezvous lock", 0, MTX_DEF);
@@ -400,7 +403,7 @@ static void vm_free_mem_seg(struct vm *vm, struct mem_seg *seg)
 	if (seg->object != NULL)
 		vmm_mem_free(vm->vmspace, seg->gpa, seg->len);
 
-	bzero(seg, sizeof(*seg));
+	memset(seg, 0, sizeof(*seg));
 }
 
 static void vm_cleanup(struct vm *vm, bool destroy)
@@ -469,7 +472,7 @@ const char *vm_name(struct vm *vm)
 
 int vm_map_mmio(struct vm *vm, vm_paddr_t gpa, size_t len, vm_paddr_t hpa)
 {
-	vm_object_t obj;
+	struct vm_region *obj;
 
 	if ((obj = vmm_mmio_alloc(vm->vmspace, gpa, len, hpa)) == NULL)
 		return (ENOMEM);
@@ -506,7 +509,7 @@ int vm_malloc(struct vm *vm, vm_paddr_t gpa, size_t len)
 {
 	int available, allocated;
 	struct mem_seg *seg;
-	vm_object_t object;
+	struct vm_region *object;
 	vm_paddr_t g;
 
 	if ((gpa & PAGE_MASK) || (len & PAGE_MASK) || len == 0)
@@ -769,7 +772,7 @@ vm_get_memobj(struct vm *vm, vm_paddr_t gpa, size_t len,
 	int i;
 	size_t seg_len;
 	vm_paddr_t seg_gpa;
-	vm_object_t seg_obj;
+	struct vm_region *seg_obj;
 
 	for (i = 0; i < vm->num_mem_segs; i++) {
 		if ((seg_obj = vm->mem_segs[i].object) == NULL)
@@ -1973,16 +1976,16 @@ int vm_activate_cpu(struct vm *vm, int vcpuid)
 	return (0);
 }
 
-cpuset_t vm_active_cpus(struct vm * vm)
+checklist_mask_t *vm_active_cpus(struct vm * vm)
 {
 
-	return (vm->active_cpus);
+	return (&vm->active_cpus);
 }
 
-cpuset_t vm_suspended_cpus(struct vm * vm)
+checklist_mask_t *vm_suspended_cpus(struct vm * vm)
 {
 
-	return (vm->suspended_cpus);
+	return (&vm->suspended_cpus);
 }
 
 void *vcpu_stats(struct vm *vm, int vcpuid)
@@ -2072,7 +2075,7 @@ int vm_apicid2vcpuid(struct vm *vm, int apicid)
 }
 
 void
-vm_smp_rendezvous(struct vm *vm, int vcpuid, cpuset_t dest,
+vm_smp_rendezvous(struct vm *vm, int vcpuid, checklist_mask_t *dest,
 				  vm_rendezvous_func_t func, void *arg)
 {
 	int i;
@@ -2169,7 +2172,7 @@ vm_copy_teardown(struct vm *vm, int vcpuid, struct vm_copyinfo *copyinfo,
 		if (copyinfo[idx].cookie != NULL)
 			vm_gpa_release(copyinfo[idx].cookie);
 	}
-	bzero(copyinfo, num_copyinfo * sizeof(struct vm_copyinfo));
+	memset(copyinfo, 0, num_copyinfo * sizeof(struct vm_copyinfo));
 }
 
 int
@@ -2182,7 +2185,7 @@ vm_copy_setup(struct vm *vm, int vcpuid, struct vm_guest_paging *paging,
 	void *hva, *cookie;
 	uint64_t gpa;
 
-	bzero(copyinfo, sizeof(struct vm_copyinfo) * num_copyinfo);
+	memset(copyinfo, 0, sizeof(struct vm_copyinfo) * num_copyinfo);
 
 	nused = 0;
 	remaining = len;

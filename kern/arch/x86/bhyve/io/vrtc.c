@@ -252,7 +252,7 @@ static time_t rtc_to_secs(struct vrtc *vrtc)
 	vm = vrtc->vm;
 	rtc = &vrtc->rtcdev;
 
-	bzero(&ct, sizeof(struct clocktime));
+	memset(&ct, 0, sizeof(struct clocktime));
 
 	error = rtcget(rtc, rtc->sec, &ct.sec);
 	if (error || ct.sec < 0 || ct.sec > 59) {
