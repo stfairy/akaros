@@ -139,3 +139,8 @@ TO, FROM
 + , sizeof(TO)
  )
 
+@@
+expression cl;
+@@
+-CPU_ZERO(cl)
++reset_checklist(&cl->mask)

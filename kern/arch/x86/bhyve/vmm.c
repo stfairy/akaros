@@ -2107,7 +2107,7 @@ restart:
 
 	RENDEZVOUS_CTR0(vm, vcpuid, "Initiating rendezvous");
 	vm->rendezvous_req_cpus = dest;
-	CPU_ZERO(&vm->rendezvous_done_cpus);
+	reset_checklist(&vm->rendezvous_done_cpus->mask);
 	vm->rendezvous_arg = arg;
 	vm_set_rendezvous_func(vm, func);
 	mtx_unlock(&vm->rendezvous_mtx);

@@ -805,7 +805,7 @@ vlapic_calcdest(struct vm *vm, checklist_mask_t * dmask, uint32_t dest, bool phy
 		/*
 		 * Physical mode: destination is APIC ID.
 		 */
-		CPU_ZERO(dmask);
+		reset_checklist(&dmask->mask);
 		vcpuid = vm_apicid2vcpuid(vm, dest);
 		if (vcpuid < VM_MAXCPU)
 			CPU_SET(vcpuid, dmask);
@@ -832,7 +832,7 @@ vlapic_calcdest(struct vm *vm, checklist_mask_t * dmask, uint32_t dest, bool phy
 		 * Logical mode: match each APIC that has a bit set
 		 * in it's LDR that matches a bit in the ldest.
 		 */
-		CPU_ZERO(dmask);
+		reset_checklist(&dmask->mask);
 		amask = vm_active_cpus(vm);
 		while ((vcpuid = CPU_FFS(&amask)) != 0) {
 			vcpuid--;
@@ -965,7 +965,7 @@ int vlapic_icrlo_write_handler(struct vlapic *vlapic, bool * retu)
 				CPU_CLR(vlapic->vcpuid, &dmask);
 				break;
 			default:
-				CPU_ZERO(&dmask);	/* satisfy gcc */
+				reset_checklist(&dmask->mask);	/* satisfy gcc */
 				break;
 		}
 
