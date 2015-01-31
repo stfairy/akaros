@@ -90,3 +90,21 @@ E
 -ipi_cpu(
 +send_ipi(
   ...)
+
+@rulebcopy@
+identifier f;
+type T;
+	expression FROM, TO, SIZE;
+@@
+T f(...){<...
+bcopy(FROM, TO, SIZE);
+...>}
+@@
+identifier rulebcopy.f;
+	expression FROM, TO, SIZE;
+@@
+
+- bcopy(FROM, TO, SIZE
++ memmove(TO, FROM, SIZE
+   )
+

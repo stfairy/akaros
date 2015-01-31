@@ -338,7 +338,7 @@ int vmcb_seg(struct vmcb *vmcb, int ident, struct vmcb_segment *seg2)
 
 	seg = vmcb_segptr(vmcb, ident);
 	if (seg != NULL) {
-		bcopy(seg, seg2, sizeof(struct vmcb_segment));
+		memmove(seg2, seg, sizeof(struct vmcb_segment));
 		return (0);
 	} else {
 		return (EINVAL);

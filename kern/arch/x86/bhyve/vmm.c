@@ -1455,7 +1455,7 @@ restart:
 	}
 
 	/* copy the exit information */
-	bcopy(vme, &vmrun->vm_exit, sizeof(struct vm_exit));
+	memmove(&vmrun->vm_exit, vme, sizeof(struct vm_exit));
 	return (error);
 }
 
@@ -2227,7 +2227,7 @@ vm_copyin(struct vm *vm, int vcpuid, struct vm_copyinfo *copyinfo, void *kaddr,
 	dst = kaddr;
 	idx = 0;
 	while (len > 0) {
-		bcopy(copyinfo[idx].hva, dst, copyinfo[idx].len);
+		memmove(dst, copyinfo[idx].hva, copyinfo[idx].len);
 		len -= copyinfo[idx].len;
 		dst += copyinfo[idx].len;
 		idx++;
@@ -2244,7 +2244,7 @@ vm_copyout(struct vm *vm, int vcpuid, const void *kaddr,
 	src = kaddr;
 	idx = 0;
 	while (len > 0) {
-		bcopy(src, copyinfo[idx].hva, copyinfo[idx].len);
+		memmove(copyinfo[idx].hva, src, copyinfo[idx].len);
 		len -= copyinfo[idx].len;
 		src += copyinfo[idx].len;
 		idx++;

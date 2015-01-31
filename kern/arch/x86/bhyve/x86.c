@@ -454,9 +454,9 @@ x86_emulate_cpuid(struct vm *vm, int vcpu_id,
 
 		case 0x40000000:
 			regs[0] = CPUID_VM_HIGH;
-			bcopy(bhyve_id, &regs[1], 4);
-			bcopy(bhyve_id + 4, &regs[2], 4);
-			bcopy(bhyve_id + 8, &regs[3], 4);
+			memmove(&regs[1], bhyve_id, 4);
+			memmove(&regs[2], bhyve_id + 4, 4);
+			memmove(&regs[3], bhyve_id + 8, 4);
 			break;
 
 		default:

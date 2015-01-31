@@ -1188,7 +1188,7 @@ void vie_init(struct vie *vie, const char *inst_bytes, int inst_length)
 	vie->index_register = VM_REG_LAST;
 
 	if (inst_length) {
-		bcopy(inst_bytes, vie->inst, inst_length);
+		memmove(vie->inst, inst_bytes, inst_length);
 		vie->num_valid = inst_length;
 	}
 }
