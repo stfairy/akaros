@@ -340,7 +340,7 @@ DECLARE_MODULE(vmm, vmm_kmod, SI_SUB_SMP + 1, SI_ORDER_ANY);
 MODULE_VERSION(vmm, 1);
 #endif
 
-static void vm_init(struct vm *vm, bool create)
+static void virt_init(struct vm *vm, bool create)
 {
 	int i;
 
