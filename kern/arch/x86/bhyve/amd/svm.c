@@ -1241,7 +1241,7 @@ svm_vmexit(struct svm_softc *svm_sc, int vcpu, struct vm_exit *vmexit)
 										 __func__, error));
 					/* fallthru */
 				case T_SEGNP:
-				case IDT_SS:
+				case T_STACK:
 				case T_GPFLT:
 				case IDT_AC:
 				case T_TSS:

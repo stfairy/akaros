@@ -29,6 +29,7 @@ sed -i 's/IDT_PF/T_PGFLT/g' $*
 sed -i 's/IDT_DF/T_DBLFLT/g' $*
 sed -i 's/IDT_DE/T_DIVIDE/g' $*
 sed -i 's/IDT_TS/T_TSS/g' $*
+sed -i 's/IDT_SS/T_STACK/g' $*
 sed -i 's/IDT_NP/T_SEGNP/g' $*
 sed -i 's/IDT_GP/T_GPFLT/g' $*
 

@@ -1544,7 +1544,7 @@ static enum exc_class exception_class(uint64_t info)
 		case T_DIVIDE:
 		case T_TSS:
 		case T_SEGNP:
-		case IDT_SS:
+		case T_STACK:
 		case T_GPFLT:
 			return (EXC_CONTRIBUTORY);
 		default:
