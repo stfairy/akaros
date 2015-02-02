@@ -123,7 +123,7 @@ struct vm {
 	qlock_t rendezvous_mtx;	/* (o) rendezvous lock */
 	int num_mem_segs;			/* (o) guest memory segments */
 	struct mem_seg mem_segs[VM_MAX_MEMORY_SEGMENTS];
-	struct vmspace *vmspace;	/* (o) guest's address space */
+	struct vm_region *vm_region;	/* (o) guest's address space */
 	char name[VM_MAX_NAMELEN];	/* (o) virtual machine name */
 	struct vcpu vcpu[VM_MAXCPU];	/* (i) guest vcpus */
 };
@@ -135,14 +135,14 @@ static struct vmm_ops *ops;
 #define	VMM_CLEANUP()	(ops != NULL ? (*ops->cleanup)() : 0)
 #define	VMM_RESUME()	(ops != NULL ? (*ops->resume)() : 0)
 
-#define	VMINIT(vm, pmap) (ops != NULL ? (*ops->vminit)(vm, pmap): NULL)
+#define	VMINIT(vm, p) (ops != NULL ? (*ops->vminit)(vm, p): NULL)
 #define	VMRUN(vmi, vcpu, rip, pmap, rptr, sptr) \
 	(ops != NULL ? (*ops->vmrun)(vmi, vcpu, rip, pmap, rptr, sptr) : ENXIO)
 #define	VMCLEANUP(vmi)	(ops != NULL ? (*ops->vmcleanup)(vmi) : NULL)
 #define	VMSPACE_ALLOC(min, max) \
 	(ops != NULL ? (*ops->vmspace_alloc)(min, max) : NULL)
-#define	VMSPACE_FREE(vmspace) \
-	(ops != NULL ? (*ops->vmspace_free)(vmspace) : ENXIO)
+#define	VMSPACE_FREE(vm_region) \
+	(ops != NULL ? (*ops->vmspace_free)(vm_region) : ENXIO)
 #define	VMGETREG(vmi, vcpu, num, retval)		\
 	(ops != NULL ? (*ops->vmgetreg)(vmi, vcpu, num, retval) : ENXIO)
 #define	VMSETREG(vmi, vcpu, num, val)		\
@@ -347,7 +347,7 @@ static void virt_init(struct vm *vm, bool create)
 {
 	int i;
 
-	vm->cookie = VMINIT(vm, vmspace_pmap(vm->vmspace));
+	vm->cookie = VMINIT(vm, vm->vm_region);
 	vm->iommu = NULL;
 	vm->vioapic = vioapic_init(vm);
 	vm->vhpet = vhpet_init(vm);
@@ -369,7 +369,7 @@ static void virt_init(struct vm *vm, bool create)
 int vm_create(const char *name, struct vm **retvm)
 {
 	struct vm *vm;
-	struct vmspace *vmspace;
+	struct vm_region *vm_region;
 
 	/*
 	 * If vmm.ko could not be successfully initialized then don't attempt
@@ -388,7 +388,7 @@ int vm_create(const char *name, struct vm **retvm)
 	vm = kzmalloc(sizeof(struct vm), KMALLOC_WAIT);
 	strncpy(vm->name, name, sizeof(vm->name));
 	vm->num_mem_segs = 0;
-	vm->vmspace = vmspace;
+	vm->vm_region = vm_region;
 	mtx_init(&vm->rendezvous_mtx, "vm rendezvous lock", 0, MTX_DEF);
 
 	virt_init(vm, true);
@@ -401,7 +401,7 @@ static void vm_free_mem_seg(struct vm *vm, struct mem_seg *seg)
 {
 
 	if (seg->object != NULL)
-		vmm_mem_free(vm->vmspace, seg->gpa, seg->len);
+		vmm_mem_free(vm->vm_region, seg->gpa, seg->len);
 
 	memset(seg, 0, sizeof(*seg));
 }
@@ -436,8 +436,8 @@ static void vm_cleanup(struct vm *vm, bool destroy)
 
 		vm->num_mem_segs = 0;
 
-		VMSPACE_FREE(vm->vmspace);
-		vm->vmspace = NULL;
+		VMSPACE_FREE(vm->vm_region);
+		vm->vm_region = NULL;
 	}
 }
 
@@ -474,7 +474,7 @@ int vm_map_mmio(struct vm *vm, vm_paddr_t gpa, size_t len, vm_paddr_t hpa)
 {
 	struct vm_region *obj;
 
-	if ((obj = vmm_mmio_alloc(vm->vmspace, gpa, len, hpa)) == NULL)
+	if ((obj = vmm_mmio_alloc(vm->vm_region, gpa, len, hpa)) == NULL)
 		return (ENOMEM);
 	else
 		return (0);
@@ -483,7 +483,7 @@ int vm_map_mmio(struct vm *vm, vm_paddr_t gpa, size_t len, vm_paddr_t hpa)
 int vm_unmap_mmio(struct vm *vm, vm_paddr_t gpa, size_t len)
 {
 
-	vmm_mmio_free(vm->vmspace, gpa, len);
+	vmm_mmio_free(vm->vm_region, gpa, len);
 	return (0);
 }
 
@@ -545,7 +545,7 @@ int vm_malloc(struct vm *vm, vm_paddr_t gpa, size_t len)
 
 	seg = &vm->mem_segs[vm->num_mem_segs];
 
-	if ((object = vmm_mem_alloc(vm->vmspace, gpa, len)) == NULL)
+	if ((object = vmm_mem_alloc(vm->vm_region, gpa, len)) == NULL)
 		return (ENOMEM);
 
 	seg->gpa = gpa;
@@ -1388,7 +1388,7 @@ int vm_run(struct vm *vm, struct vm_run *vmrun)
 
 	rptr = &vm->rendezvous_func;
 	sptr = &vm->suspend;
-	pmap = vmspace_pmap(vm->vmspace);
+	pmap = vmspace_pmap(vm->vm_region);
 	vcpu = &vm->vcpu[vcpuid];
 	vme = &vcpu->exitinfo;
 	rip = vmrun->rip;
@@ -2060,10 +2060,10 @@ void vcpu_notify_event(struct vm *vm, int vcpuid, bool lapic_intr)
 	vcpu_unlock(vcpu);
 }
 
-struct vmspace *vm_get_vmspace(struct vm *vm)
+struct vm_region *vm_get_vm_region(struct vm *vm)
 {
 
-	return (vm->vmspace);
+	return (vm->vm_region);
 }
 
 int vm_apicid2vcpuid(struct vm *vm, int apicid)
@@ -2266,7 +2266,7 @@ static void vm_get_rescnt(struct vm *vm, int vcpu, struct vmm_stat_type *stat)
 
 	if (vcpu == 0) {
 		vmm_stat_set(vm, vcpu, VMM_MEM_RESIDENT,
-					 PAGE_SIZE * vmspace_resident_count(vm->vmspace));
+					 PAGE_SIZE * vmspace_resident_count(vm->vm_region));
 	}
 }
 
@@ -2275,7 +2275,7 @@ static void vm_get_wiredcnt(struct vm *vm, int vcpu, struct vmm_stat_type *stat)
 
 	if (vcpu == 0) {
 		vmm_stat_set(vm, vcpu, VMM_MEM_WIRED,
-					 PAGE_SIZE * pmap_wired_count(vmspace_pmap(vm->vmspace)));
+					 PAGE_SIZE * pmap_wired_count(vmspace_pmap(vm->vm_region)));
 	}
 }
 
