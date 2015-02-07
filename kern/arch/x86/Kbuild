@@ -31,5 +31,6 @@ obj-y						+= trap.o trap$(BITS).o
 obj-y						+= trapentry$(BITS).o
 obj-y						+= usb.o
 
-# bhyve support: rather experimental.
-obj-$(CONFIG_BHYVE)				+= bhyve/
+# VMM support. Always leave this in to ensure we don't break anything.
+obj-y						+= vmm/
+
