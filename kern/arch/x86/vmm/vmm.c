@@ -12,6 +12,7 @@
 
 #include <pmap.h>
 #include "intel/vmx_cpufunc.h"
+#include "intel/vmcs.h"
 
 /* this will be the init function for vmm. For now, it just ensures we
    don't break things. */

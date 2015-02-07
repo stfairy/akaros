@@ -62,3 +62,5 @@ sed -i 's/MSR_APICBASE/MSR_IA32_APICBASE/g' $*
 
 sed -i 's/volatile cpuset_t/checklist_mask_t/g' $*
 sed -i 's/cpuset_t/checklist_mask_t/g' $*
+
+sed -i 's/struct  *seg_desc[ ,]/syssegdesc_t/g' $*
