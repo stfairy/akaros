@@ -17,6 +17,7 @@
 #include "intel/vmx_cpufunc.h"
 #include "intel/vmcs.h"
 #include "intel/vmx.h"
+#include "x86.h"
 
 /* this will be the init function for vmm. For now, it just ensures we
    don't break things. */
