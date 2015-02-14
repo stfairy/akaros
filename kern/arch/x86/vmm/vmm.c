@@ -18,6 +18,8 @@
 #include "intel/vmcs.h"
 #include "intel/vmx.h"
 #include "x86.h"
+#include "vmm.h"
+#include "func.h"
 
 /* this will be the init function for vmm. For now, it just ensures we
    don't break things. */

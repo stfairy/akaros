@@ -340,36 +340,7 @@ struct vm_exit {
 	} u;
 };
 
-/* APIs to inject faults into the guest */
-void vm_inject_fault(void *vm, int vcpuid, int vector, int errcode_valid,
-    int errcode);
-
-static __inline void
-vm_inject_ud(void *vm, int vcpuid)
-{
-	vm_inject_fault(vm, vcpuid, T_ILLOP, 0, 0);
-}
-
-static __inline void
-vm_inject_gp(void *vm, int vcpuid)
-{
-	vm_inject_fault(vm, vcpuid, T_GPFLT, 1, 0);
-}
-
-static __inline void
-vm_inject_ac(void *vm, int vcpuid, int errcode)
-{
-	vm_inject_fault(vm, vcpuid, T_ALIGN, 1, errcode);
-}
-
-static __inline void
-vm_inject_ss(void *vm, int vcpuid, int errcode)
-{
-	vm_inject_fault(vm, vcpuid, T_STACK, 1, errcode);
-}
-
-void vm_inject_pf(void *vm, int vcpuid, int error_code, uint64_t cr2);
-
-int vm_restart_instruction(void *vm, int vcpuid);
+struct vmm {
+};
 
 #endif	/* _VMM_H_ */

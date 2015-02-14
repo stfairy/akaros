@@ -22,6 +22,7 @@
 #include <schedule.h>
 #include <devalarm.h>
 #include <ns.h>
+#include <arch/vmm/vmm.h>
 
 TAILQ_HEAD(vcore_tailq, vcore);
 /* 'struct proc_list' declared in sched.h (not ideal...) */
@@ -102,7 +103,9 @@ struct proc {
 	struct proc_alarm_set		alarmset;
 	struct cv_lookup_tailq		abortable_sleepers;
 	spinlock_t					abort_list_lock;
-	void *virtinfo;
+
+	/* virtualization support. */
+	struct vmm vmm;
 };
 
 /* Til we remove all Env references */
