@@ -341,6 +341,37 @@ struct vm_exit {
 };
 
 struct vmm {
+	// true if this is a VMMCP.
+	bool vmmcp;
+
+	// Number of cores in this VMMCP.
+	int ncores;
+	// The EPT entries are incompatible in just a few bit
+	// positions. Very few. You could *almost* use the same page
+	// tables for EPT and process page tables, but ... not quite.
+	// Really: you put X in bit two of the EPT and in bit 63 of
+	// the standard one.  Setting WB (6 in bits 5:3) in the EPT
+	// versions disables caching (CD is bit 4) in the native
+	// versions.  WTF?
+	//
+	// As a result we have to keep these two in sync, IFF
+	// we have a VMMCP. N.B. only for the sie of the EPT
+	// address space, which is limited to much less than
+	// the virtual address space.
+	struct vmr_tailq vm_regions;
+	physaddr_t eptpt;
+
+	// The VMCS is intel-specific. But, maybe, someday, AMD will
+	// be back.  Just make this an anon union and we'll work it
+	// all out later. Again, remember, we're compiling in support
+	// for both architectures to ensure that we can correctly
+	// figure out at boot time what we're on and what we should
+	// do. This avoids the problem seen years ago with RH6 where
+	// you could install a kernel from the ISO, but the kernel it
+	// installed would GPF on a K7.
+	union {
+		struct vmcs *vmcs;
+	};
 };
 
 #endif	/* _VMM_H_ */
