@@ -542,7 +542,7 @@ endif #ifeq ($(mixed-targets),1)
 # List all userspace directories here, and state any dependencies between them,
 # such as how pthread depends on parlib.
 
-user-dirs = parlib pthread benchutil iplib ndblib bsd
+user-dirs = parlib pthread benchutil iplib ndblib bsd virtio
 benchutil: parlib
 pthread: parlib benchutil
 iplib: parlib
