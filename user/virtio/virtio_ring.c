@@ -230,7 +230,7 @@ static inline int virtqueue_add_avail(struct virtqueue *_vq,
 	canary = vq->vq.num_free;
 
 	if (vq->vq.num_free < total_sg) {
-		fprintf(stderr, "Can't add buf len %i - avail = %i\n",
+		if (0) fprintf(stderr, "Can't add buf len %i - avail = %i\n",
 				 total_sg, vq->vq.num_free);
 		/* FIXME: for historical reasons, we force a notify here if
 		 * there are outgoing parts to the buffer.  Presumably the
@@ -256,6 +256,7 @@ static inline int virtqueue_add_avail(struct virtqueue *_vq,
 	for (; n < (out_sgs + in_sgs); n++) {
 		for (sg = sgs[n]; sg; sg = next(sg, &total_in)) {
 			vq->vring.desc[i].flags = VRING_DESC_F_NEXT | VRING_DESC_F_WRITE;
+			__asm__ __volatile__("vmcall\n");
 			vq->vring.desc[i].addr = sg_phys(sg->v);
 			vq->vring.desc[i].len = sg->length;
 			prev = i;
@@ -285,7 +286,7 @@ add_head:
 	if (unlikely(vq->num_added == (1 << 16) - 1))
 		virtqueue_kick(_vq);
 
-	fprintf(stderr, "Added buffer head %i to %p\n", head, vq);
+	if (0) fprintf(stderr, "Added buffer head %i to %p\n", head, vq);
 	END_USE(vq);
 	BUG_ON(vq->vq.num_free > canary);
 	return 0;
@@ -475,7 +476,7 @@ void *virtqueue_get_buf_used(struct virtqueue *_vq, unsigned int *len)
 	}
 
 	if (!more_used(vq)) {
-		fprintf(stderr, "No more buffers in queue\n");
+		if (0) fprintf(stderr, "No more buffers in queue\n");
 		END_USE(vq);
 		return NULL;
 	}
@@ -681,11 +682,12 @@ struct virtqueue *vring_new_virtqueue(unsigned int index,
 
 	/* We assume num is a power of 2. */
 	if (num & (num - 1)) {
-		fprintf(stderr, "Bad virtqueue length %u\n", num);
+		if (0) fprintf(stderr, "Bad virtqueue length %u\n", num);
 		exit(1);
 	}
 
 	vq = malloc(sizeof(*vq) + sizeof(void *) * num);
+fprintf(stderr, "VQ %p\n", vq);
 	if (!vq)
 		return NULL;
 
@@ -845,7 +847,7 @@ int virtio_get_buf_avail_start(struct virtqueue *_vq, uint16_t *last_avail_idx, 
 	head = vq->vring.avail->ring[i];
 
 	if (head >= vq->vring.num) {
-		fprintf(stderr, "Guest says index %u > %u is available",
+		if (0) fprintf(stderr, "Guest says index %u > %u is available",
 			   head, vq->vring.num);
 		return -EINVAL;
 	}
@@ -859,7 +861,7 @@ int virtio_get_buf_avail_start(struct virtqueue *_vq, uint16_t *last_avail_idx, 
 	}
 
 	if (sgp) {
-		fprintf(stderr, "entry @%d is %d long\n", head, sglen);
+		if (0) fprintf(stderr, "entry @%d is %d long\n", head, sglen);
 		
 		sg = calloc(sglen, sizeof(*sg));
 		*sgp = sg;

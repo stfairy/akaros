@@ -10,8 +10,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ros/syscall.h>
+#include <sys/mman.h>
 #include <virtio.h>
 
+int *mmap_blob;
 unsigned long long stack[1024];
 volatile int shared = 0;
 int mcp = 1;
@@ -44,6 +46,7 @@ static void *fail(void *arg)
 		for(i = 0; i < 8; i++) {
 			/* guest: make a line available to host */
 			ret = virtqueue_add_inbuf_avail(guesttocons, in, 1, line, 0);
+			__asm__ __volatile__("vmcall\n");
 			
 			add_used(guesttocons, head, outlen+inlen);
 			/* guest code. Get all your buffers back */
@@ -98,11 +101,26 @@ void *talk_thread(void *arg)
 
 int main(int argc, char **argv)
 {
+	int nr_gpcs = 1;
 	int fd = open("#c/sysctl", O_RDWR), ret;
 	void * x;
 	static char cmd[512];
 	if (fd < 0) {
 		perror("#c/sysctl");
+		exit(1);
+	}
+
+	if (ros_syscall(SYS_setup_vmm, nr_gpcs, 0, 0, 0, 0, 0) != nr_gpcs) {
+		perror("Guest pcore setup failed");
+		exit(1);
+	}
+	/* blob that is faulted in from the EPT first.  we need this to be in low
+	 * memory (not above the normal mmap_break), so the EPT can look it up.
+	 * Note that we won't get 4096.  The min is 1MB now, and ld is there. */
+	mmap_blob = mmap((int*)4096, PGSIZE, PROT_READ | PROT_WRITE,
+	                 MAP_ANONYMOUS, -1, 0);
+	if (mmap_blob == MAP_FAILED) {
+		perror("Unable to mmap");
 		exit(1);
 	}
 
@@ -117,6 +135,7 @@ int main(int argc, char **argv)
 		perror("outpages");
 		exit(1);
 	}
+fprintf(stderr, "outpages %p\n", outpages);
 
 	my_threads = calloc(sizeof(pthread_t) , nr_threads);
 	my_retvals = calloc(sizeof(void *) , nr_threads);
@@ -133,7 +152,7 @@ int main(int argc, char **argv)
 	}
 
 	guesttocons = vring_new_virtqueue(0, 512, 8192, 0, outpages, NULL, NULL, "test");
-	
+	fprintf(stderr, "guesttocons is %p\n", guesttocons);
 	if (mcp) {
 		if (pthread_create(&my_threads[0], NULL, &talk_thread, NULL))
 			perror("pth_create failed");
@@ -173,6 +192,10 @@ int main(int argc, char **argv)
 	       p1[0]);
 	sprintf(cmd, "V 0x%x 0x%x 0x%x", (unsigned long long)fail,
 		(unsigned long long)&stack[1024], (unsigned long long)p512);
+showscatterlist(in, 1);
+showscatterlist(out, 1);
+showvq(guesttocons);
+showdesc(guesttocons, 0);
 	fprintf(stderr, "Writing command :%s:\n", cmd);
 	ret = write(fd, cmd, strlen(cmd));
 	if (ret != strlen(cmd)) {
