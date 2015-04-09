@@ -20,7 +20,7 @@ int mcp = 1;
 #define V(x, t) (*((volatile t*)(x)))
 // NOTE: p is both our virtual and guest physical.
 void *p;
-
+int g = 0, h = 0;
 struct virtqueue *head, *consin, *consout;
 pthread_t *my_threads;
 void **my_retvals;
@@ -40,29 +40,30 @@ struct virtqueue *guesttocons;
 
 static void *fail(void *arg)
 {
+	uint16_t head = 0;
+	int i, ret;
+	for(i = 0; i < 8;) {
+		/* guest: make a line available to host */
+		ret = virtqueue_add_inbuf_avail(guesttocons, in, 1, line, 0);
+		if (ret == NULL)
+			continue;
 
-		uint16_t head;
-		int i, ret;
-		for(i = 0; i < 8; i++) {
-			/* guest: make a line available to host */
-			ret = virtqueue_add_inbuf_avail(guesttocons, in, 1, line, 0);
-			
-			add_used(guesttocons, head, outlen+inlen);
-			/* guest code. Get all your buffers back */
-			char *cp;
-			while ((cp = virtqueue_get_buf_used(guesttocons, &conslen))) {
-				if (0)
-				if (cp != line)
-					continue;
-				//fprintf(stderr, "guest: from host: %s\n", cp);
-				/* guest: push some buffers into the channel for the host to use */
-				/* can't use sprintf here ... */
-				outline[0] = 'G';
+		/* guest code. Get all your buffers back */
+		char *cp;
+		while ((cp = virtqueue_get_buf_used(guesttocons, &conslen))) {
+			while (h < g)
+				;
+			g++;
+			if (cp != line)
+				continue;
+			//fprintf(stderr, "guest: from host: %s\n", cp);
+			/* guest: push some buffers into the channel for the host to use */
+			/* can't use sprintf here ... */
+			outline[0] = 'G';
 //				sprintf(outline, "guest: outline %d:%s:\n", iter, line);
-				ret = virtqueue_add_outbuf_avail(guesttocons, out, 1, outline, 0);
-			}
+			ret = virtqueue_add_outbuf_avail(guesttocons, out, 1, outline, 0);
 		}
-
+	}
 
 	__asm__ __volatile__("vmcall");
 	__asm__ __volatile__("mov $0xdeadbeef, %rbx; mov 5, %rax\n");
@@ -97,6 +98,7 @@ void *talk_thread(void *arg)
 		
 		/* host: now ack that we used them all. */
 		add_used(guesttocons, head, outlen+inlen);
+		h++;
 	}
 	fprintf(stderr, "All done\n");
 	return NULL;
