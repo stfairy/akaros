@@ -28,6 +28,7 @@
 #include <sys/uio.h>
 #include <stdint.h>
 #include <err.h>
+#include <sys/mman.h>
 #include <virtio.h>
 
 #define BAD_RING(_vq, fmt, args...)				\
@@ -256,13 +257,13 @@ static inline int virtqueue_add_avail(struct virtqueue *_vq,
 	for (; n < (out_sgs + in_sgs); n++) {
 		for (sg = sgs[n]; sg; sg = next(sg, &total_in)) {
 			vq->vring.desc[i].flags = VRING_DESC_F_NEXT | VRING_DESC_F_WRITE;
-			__asm__ __volatile__("vmcall\n");
 			vq->vring.desc[i].addr = sg_phys(sg->v);
 			vq->vring.desc[i].len = sg->length;
 			prev = i;
 			i = vq->vring.desc[i].next;
 		}
 	}
+
 	/* Last one doesn't continue. */
 	vq->vring.desc[prev].flags &= ~VRING_DESC_F_NEXT;
 
@@ -686,12 +687,19 @@ struct virtqueue *vring_new_virtqueue(unsigned int index,
 		exit(1);
 	}
 
-	vq = malloc(sizeof(*vq) + sizeof(void *) * num);
-fprintf(stderr, "VQ %p\n", vq);
+	vq = mmap((int*)4096, sizeof(*vq) + sizeof(void *) * num + 2*PGSIZE, PROT_READ | PROT_WRITE,
+		  MAP_ANONYMOUS, -1, 0);
+	if (vq == MAP_FAILED) {
+		perror("Unable to mmap vq");
+		exit(1);
+	}
+	
+	fprintf(stderr, "VQ %p %d bytes \n", vq, sizeof(*vq) + sizeof(void *) * num + 2*PGSIZE);
 	if (!vq)
 		return NULL;
-
+	
 	vring_init(&vq->vring, num, pages, vring_align);
+	fprintf(stderr, "done vring init\n");
 	vq->vq.callback = callback;
 	vq->vq.name = name;
 	vq->vq.num_free = num;

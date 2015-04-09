@@ -14,7 +14,7 @@
 #include <virtio.h>
 
 int *mmap_blob;
-unsigned long long stack[1024];
+void *stack;
 volatile int shared = 0;
 int mcp = 1;
 #define V(x, t) (*((volatile t*)(x)))
@@ -46,7 +46,6 @@ static void *fail(void *arg)
 		for(i = 0; i < 8; i++) {
 			/* guest: make a line available to host */
 			ret = virtqueue_add_inbuf_avail(guesttocons, in, 1, line, 0);
-			__asm__ __volatile__("vmcall\n");
 			
 			add_used(guesttocons, head, outlen+inlen);
 			/* guest code. Get all your buffers back */
@@ -124,18 +123,21 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	void *inpages, *outpages;
-	ret = posix_memalign(&inpages, 8192, 1048576);
-	if (ret) {
-		perror("inpages");
-		exit(1);
-	}
-	ret = posix_memalign(&outpages, 8192, 1048576);
-	if (ret) {
-		perror("outpages");
+	void *outpages;
+	outpages = mmap((int*)4096, 1048576, PROT_READ | PROT_WRITE,
+	                 MAP_ANONYMOUS, -1, 0);
+	if (outpages == MAP_FAILED) {
+		perror("Unable to mmap");
 		exit(1);
 	}
 fprintf(stderr, "outpages %p\n", outpages);
+	stack = mmap((int*)4096, 8192, PROT_READ | PROT_WRITE,
+	                 MAP_ANONYMOUS, -1, 0);
+	if (stack == MAP_FAILED) {
+		perror("Unable to mmap");
+		exit(1);
+	}
+fprintf(stderr, "stack %p\n", stack);
 
 	my_threads = calloc(sizeof(pthread_t) , nr_threads);
 	my_retvals = calloc(sizeof(void *) , nr_threads);
@@ -195,7 +197,7 @@ fprintf(stderr, "outpages %p\n", outpages);
 showscatterlist(in, 1);
 showscatterlist(out, 1);
 showvq(guesttocons);
-showdesc(guesttocons, 0);
+//showdesc(guesttocons, 0);
 	fprintf(stderr, "Writing command :%s:\n", cmd);
 	ret = write(fd, cmd, strlen(cmd));
 	if (ret != strlen(cmd)) {
