@@ -25,15 +25,15 @@ struct virtqueue *head, *consin, *consout;
 pthread_t *my_threads;
 void **my_retvals;
 int nr_threads = 2;
-	char line[128], consline[128], outline[128];
+	char *line, *consline, *outline;
 	struct scatterlist iov[32];
 	unsigned int inlen, outlen, conslen;
 	/* unlike Linux, this shared struct is for both host and guest. */
 //	struct virtqueue *constoguest = 
 //		vring_new_virtqueue(0, 512, 8192, 0, inpages, NULL, NULL, "test");
 struct virtqueue *guesttocons;
-	struct scatterlist out[] = { {outline, sizeof(outline)}, };
-	struct scatterlist in[] = { {line, sizeof(line)}, };
+	struct scatterlist out[] = { {NULL, sizeof(outline)}, };
+	struct scatterlist in[] = { {NULL, sizeof(line)}, };
 	int iter = 1;
 
 
@@ -51,16 +51,20 @@ static void *fail(void *arg)
 			/* guest code. Get all your buffers back */
 			char *cp;
 			while ((cp = virtqueue_get_buf_used(guesttocons, &conslen))) {
+				if (0)
 				if (cp != line)
 					continue;
 				//fprintf(stderr, "guest: from host: %s\n", cp);
 				/* guest: push some buffers into the channel for the host to use */
-				sprintf(outline, "guest: outline %d:%s:\n", iter, line);
+				/* can't use sprintf here ... */
+				outline[0] = 'G';
+//				sprintf(outline, "guest: outline %d:%s:\n", iter, line);
 				ret = virtqueue_add_outbuf_avail(guesttocons, out, 1, outline, 0);
 			}
 		}
 
-	__asm__ __volatile__("vmcall\n");
+
+	__asm__ __volatile__("vmcall");
 	__asm__ __volatile__("mov $0xdeadbeef, %rbx; mov 5, %rax\n");
 }
 
@@ -130,6 +134,10 @@ int main(int argc, char **argv)
 		perror("Unable to mmap");
 		exit(1);
 	}
+	line = outpages;
+	outline = outpages + 128;
+	consline = outpages + 256;
+	outpages += 4096;
 fprintf(stderr, "outpages %p\n", outpages);
 	stack = mmap((int*)4096, 8192, PROT_READ | PROT_WRITE,
 	                 MAP_ANONYMOUS, -1, 0);
@@ -155,6 +163,8 @@ fprintf(stderr, "stack %p\n", stack);
 
 	guesttocons = vring_new_virtqueue(0, 512, 8192, 0, outpages, NULL, NULL, "test");
 	fprintf(stderr, "guesttocons is %p\n", guesttocons);
+	out[0].v = outline;
+	in[0].v = line;
 	if (mcp) {
 		if (pthread_create(&my_threads[0], NULL, &talk_thread, NULL))
 			perror("pth_create failed");
@@ -193,7 +203,7 @@ fprintf(stderr, "stack %p\n", stack);
 	fprintf(stderr, "p512 %p p512[0] is 0x%lx p1 %p p1[0] is 0x%x\n", p512, p512[0], p1,
 	       p1[0]);
 	sprintf(cmd, "V 0x%x 0x%x 0x%x", (unsigned long long)fail,
-		(unsigned long long)&stack[1024], (unsigned long long)p512);
+		(unsigned long long)stack+8192, (unsigned long long)p512);
 showscatterlist(in, 1);
 showscatterlist(out, 1);
 showvq(guesttocons);
