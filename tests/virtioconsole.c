@@ -43,17 +43,16 @@ static void *fail(void *arg)
 	uint16_t head = 0;
 	int i, ret;
 	for(i = 0; i < 8;) {
+		while (V(&h, int) < V(&g, int));
+		V(&g, int) = V(&g, int) + 1;
+		i++;
 		/* guest: make a line available to host */
-		ret = virtqueue_add_inbuf_avail(guesttocons, in, 1, line, 0);
-		if (ret == NULL)
+		if (virtqueue_add_inbuf_avail(guesttocons, in, 1, line, 0))
 			continue;
 
 		/* guest code. Get all your buffers back */
-		char *cp;
+		char *cp = NULL;
 		while ((cp = virtqueue_get_buf_used(guesttocons, &conslen))) {
-			while (h < g)
-				;
-			g++;
 			if (cp != line)
 				continue;
 			//fprintf(stderr, "guest: from host: %s\n", cp);
@@ -77,27 +76,36 @@ void *talk_thread(void *arg)
 	uint16_t head;
 	int i;
 	while (1) {
+		if (V(&h, int) > 16) break;
+		V(&h, int) = V(&h, int) + 1; 
+		printf("g, h now %d, %d\n", V(&g, int), V(&h, int)); //continue;
 		/* host: use any buffers we should have been sent. */
 		head = wait_for_vq_desc(guesttocons, iov, &outlen, &inlen);
+		printf("vq desc head %d\n", head);
 		
 		/* host: if we got an output buffer, just output it. */
 		for(i = 0; i < outlen; i++) {
 			printf("Host:%s:\n", (char *)iov[i].v);
 		}
+		printf("g, h now %d, %d\n", V(&g, int), V(&h, int)); //continue;
 		
+		printf("outlen is %d; inlen is %d\n", outlen, inlen);
 		/* host: fill in the writeable buffers. */
 		for (i = outlen; i < outlen + inlen; i++) {
 			/* host: read a line. */
 			memset(consline, 0, 128);
-			if (fgets(consline, sizeof(consline), stdin) == NULL) {
+			if (0) if (fgets(consline, sizeof(consline), stdin) == NULL) {
 				exit(0);
-			}
+			} else 
+				sprintf(consline, "hi there. %d\n", i);
 			memmove(iov[i].v, consline, strlen(consline)+ 1);
 			iov[i].length = strlen(consline) + 1;
 		}
 		
 		/* host: now ack that we used them all. */
 		add_used(guesttocons, head, outlen+inlen);
+		while (V(&g, int) < V(&h, int));
+		continue;
 		h++;
 	}
 	fprintf(stderr, "All done\n");
@@ -237,9 +245,10 @@ showvq(guesttocons);
 		for (i = outlen; i < outlen + inlen; i++) {
 			/* host: read a line. */
 			memset(consline, 0, 128);
-			if (fgets(consline, sizeof(consline), stdin) == NULL) {
+			if (0) if (fgets(consline, sizeof(consline), stdin) == NULL) {
 				exit(0);
-			}
+			} else 
+				sprintf(consline, "hi there. %d\n", i);
 			memmove(iov[i].v, consline, strlen(consline)+ 1);
 			iov[i].length = strlen(consline) + 1;
 		}
