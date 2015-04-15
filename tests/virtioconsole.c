@@ -43,7 +43,7 @@ static void *fail(void *arg)
 {
        	uint16_t head = 0;
 
-	int i, ret;
+	int i, j, ret;
 	for(i = 0; i < 8;) {
 		/* guest: make a line available to host */
 		if ((gotitback == gaveit) && (!virtqueue_add_inbuf_avail(guesttocons, in, 1, line, 0))) {
@@ -60,7 +60,12 @@ static void *fail(void *arg)
 			//fprintf(stderr, "guest: from host: %s\n", cp);
 			/* guest: push some buffers into the channel for the host to use */
 			/* can't use sprintf here ... */
-			outline[0] = 'G';
+			outline[0] = '0' + i;
+			for(j = 0; line[j] != 0; j++)
+				outline[j+1] = line[j];
+			j++;
+			outline[j] = 0;
+			
 //				sprintf(outline, "guest: outline %d:%s:\n", iter, line);
 			ret = virtqueue_add_outbuf_avail(guesttocons, out, 1, outline, 0);
 			i++;
@@ -83,7 +88,8 @@ void *talk_thread(void *arg)
 		/* host: use any buffers we should have been sent. */
 		head = wait_for_vq_desc(guesttocons, iov, &outlen, &inlen);
 		printf("vq desc head %d, gaveit %d gotitback %d\n", head, gaveit, gotitback);
-		
+		for(i = 0; i < outlen + inlen; i++)
+			printf("v[%d/%d] v %p len %d\n", i, outlen + inlen, iov[i].v, iov[i].length);
 		/* host: if we got an output buffer, just output it. */
 		for(i = 0; i < outlen; i++) {
 			num++;
