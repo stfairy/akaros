@@ -20,7 +20,7 @@ int mcp = 1;
 #define V(x, t) (*((volatile t*)(x)))
 // NOTE: p is both our virtual and guest physical.
 void *p;
-int g = 0, h = 0;
+
 struct virtqueue *head, *consin, *consout;
 pthread_t *my_threads;
 void **my_retvals;
@@ -31,6 +31,7 @@ int nr_threads = 2;
 	/* unlike Linux, this shared struct is for both host and guest. */
 //	struct virtqueue *constoguest = 
 //		vring_new_virtqueue(0, 512, 8192, 0, inpages, NULL, NULL, "test");
+volatile int gaveit = 0, gotitback = 0;
 struct virtqueue *guesttocons;
 	struct scatterlist out[] = { {NULL, sizeof(outline)}, };
 	struct scatterlist in[] = { {NULL, sizeof(line)}, };
@@ -40,27 +41,29 @@ struct virtqueue *guesttocons;
 
 static void *fail(void *arg)
 {
-	uint16_t head = 0;
+       	uint16_t head = 0;
+
 	int i, ret;
 	for(i = 0; i < 8;) {
-		while (V(&h, int) < V(&g, int));
-		V(&g, int) = V(&g, int) + 1;
-		i++;
 		/* guest: make a line available to host */
-		if (virtqueue_add_inbuf_avail(guesttocons, in, 1, line, 0))
-			continue;
+		if ((gotitback == gaveit) && (!virtqueue_add_inbuf_avail(guesttocons, in, 1, line, 0))) {
+			gaveit++;
+		}
 
 		/* guest code. Get all your buffers back */
 		char *cp = NULL;
 		while ((cp = virtqueue_get_buf_used(guesttocons, &conslen))) {
-			if (cp != line)
+			if (cp != line) {
+				gotitback++;
 				continue;
+			}
 			//fprintf(stderr, "guest: from host: %s\n", cp);
 			/* guest: push some buffers into the channel for the host to use */
 			/* can't use sprintf here ... */
 			outline[0] = 'G';
 //				sprintf(outline, "guest: outline %d:%s:\n", iter, line);
 			ret = virtqueue_add_outbuf_avail(guesttocons, out, 1, outline, 0);
+			i++;
 		}
 	}
 
@@ -75,38 +78,36 @@ void *talk_thread(void *arg)
 	fprintf(stderr, "talk thread ..\n");
 	uint16_t head;
 	int i;
-	while (1) {
-		if (V(&h, int) > 16) break;
-		V(&h, int) = V(&h, int) + 1; 
-		printf("g, h now %d, %d\n", V(&g, int), V(&h, int)); //continue;
+	int num;
+	for(num = 0; num < 8;) {
 		/* host: use any buffers we should have been sent. */
 		head = wait_for_vq_desc(guesttocons, iov, &outlen, &inlen);
-		printf("vq desc head %d\n", head);
+		printf("vq desc head %d, gaveit %d gotitback %d\n", head, gaveit, gotitback);
 		
 		/* host: if we got an output buffer, just output it. */
 		for(i = 0; i < outlen; i++) {
+			num++;
 			printf("Host:%s:\n", (char *)iov[i].v);
 		}
-		printf("g, h now %d, %d\n", V(&g, int), V(&h, int)); //continue;
 		
 		printf("outlen is %d; inlen is %d\n", outlen, inlen);
 		/* host: fill in the writeable buffers. */
 		for (i = outlen; i < outlen + inlen; i++) {
 			/* host: read a line. */
 			memset(consline, 0, 128);
-			if (0) if (fgets(consline, sizeof(consline), stdin) == NULL) {
-				exit(0);
-			} else 
+			if (0) {
+				if (fgets(consline, sizeof(consline), stdin) == NULL) {
+					exit(0);
+				} 
+			} else {
 				sprintf(consline, "hi there. %d\n", i);
+			}
 			memmove(iov[i].v, consline, strlen(consline)+ 1);
 			iov[i].length = strlen(consline) + 1;
 		}
 		
 		/* host: now ack that we used them all. */
 		add_used(guesttocons, head, outlen+inlen);
-		while (V(&g, int) < V(&h, int));
-		continue;
-		h++;
 	}
 	fprintf(stderr, "All done\n");
 	return NULL;
@@ -183,14 +184,6 @@ fprintf(stderr, "stack %p\n", stack);
 	}
 	fprintf(stderr, "threads started\n");
 	
-	if (0)
-		for (int i = 0; i < nr_threads - 1; i++) {
-			int ret;
-			if (pthread_join(my_threads[i], &my_retvals[i]))
-				perror("pth_join failed");
-			fprintf(stderr, "%d %d\n", i, ret);
-		}
-	
 	ret = syscall(33, 1);
 	if (ret < 0) {
 		perror("vm setup");
@@ -214,59 +207,23 @@ fprintf(stderr, "stack %p\n", stack);
 	       p1[0]);
 	sprintf(cmd, "V 0x%x 0x%x 0x%x", (unsigned long long)fail,
 		(unsigned long long)stack+8192, (unsigned long long)p512);
-showscatterlist(in, 1);
-showscatterlist(out, 1);
-showvq(guesttocons);
-//showdesc(guesttocons, 0);
+	showscatterlist(in, 1);
+	showscatterlist(out, 1);
+	showvq(guesttocons);
+	//showdesc(guesttocons, 0);
 	fprintf(stderr, "Writing command :%s:\n", cmd);
 	ret = write(fd, cmd, strlen(cmd));
 	if (ret != strlen(cmd)) {
 		perror(cmd);
 	}
 	fprintf(stderr, "shared is %d\n", shared);
-	
-#if 0
-// This code works. You can always uncomment to test.
-	while (iter++) {
-		uint16_t head;
-		int i;
-		/* guest: make a line available to host */
-		ret = virtqueue_add_inbuf_avail(guesttocons, in, 1, line, 0);
-		
-		/* host: use any buffers we should have been sent. */
-		head = wait_for_vq_desc(guesttocons, iov, &outlen, &inlen);
 
-		/* host: if we got an output buffer, just output it. */
-		for(i = 0; i < outlen; i++) {
-			printf("Host:%s:\n", (char *)iov[i].v);
-		}
-
-		/* host: fill in the writeable buffers. */
-		for (i = outlen; i < outlen + inlen; i++) {
-			/* host: read a line. */
-			memset(consline, 0, 128);
-			if (0) if (fgets(consline, sizeof(consline), stdin) == NULL) {
-				exit(0);
-			} else 
-				sprintf(consline, "hi there. %d\n", i);
-			memmove(iov[i].v, consline, strlen(consline)+ 1);
-			iov[i].length = strlen(consline) + 1;
-		}
-
-		/* host: now ack that we used them all. */
-		add_used(guesttocons, head, outlen+inlen);
-		/* guest code. Get all your buffers back */
-		char *cp;
-		while ((cp = virtqueue_get_buf_used(guesttocons, &conslen))) {
-			if (cp != line)
-				continue;
-			fprintf(stderr, "guest: from host: %s\n", cp);
-			/* guest: push some buffers into the channel for the host to use */
-			sprintf(outline, "guest: outline %d:%s:\n", iter, line);
-			ret = virtqueue_add_outbuf_avail(guesttocons, out, 1, outline, 0);
-		}
-
+	for (int i = 0; i < nr_threads - 1; i++) {
+		int ret;
+		if (pthread_join(my_threads[i], &my_retvals[i]))
+			perror("pth_join failed");
+		fprintf(stderr, "%d %d\n", i, ret);
 	}
-#endif
+	
 	return 0;
 }
