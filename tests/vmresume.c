@@ -26,6 +26,7 @@ static void *fail(void*arg)
 	while (V(&shared, int) < 31) {
 		if (! (V(&shared, int) & 1))
 			V(&shared, int) = V(&shared, int) + 1;
+//	__asm__ __volatile__("vmcall\n");
 //		cpu_relax();
 	}
 	V(&shared, int) = 55;
@@ -35,28 +36,6 @@ static void *fail(void*arg)
 }
 
 unsigned long long *p512, *p1, *p2m;
-
-void *talk_thread(void *arg)
-{
-	char b[1];
-	printf("talk thread ..\n");
-	for(; V(&shared, int) < 32; ){
-		if (V(&shared, int) & 1) {
-			printf("shared %d\n", V(&shared, int) );
-			V(&shared, int) = V(&shared, int) + 1;
-		}
-		// let interrupts happen.
-		read(0, b, 1);
-		
-		cpu_relax();
-	}
-	printf("All done, read %d\n", *mmap_blob);
-	return NULL;
-}
-
-pthread_t *my_threads;
-void **my_retvals;
-int nr_threads = 2;
 
 int main(int argc, char **argv)
 {
@@ -81,41 +60,6 @@ int main(int argc, char **argv)
 		perror("Unable to mmap");
 		exit(1);
 	}
-
-	mcp = 1; //argc - 1;
-	if (mcp) {
-		my_threads = malloc(sizeof(pthread_t) * nr_threads);
-		my_retvals = malloc(sizeof(void*) * nr_threads);
-		if (!(my_retvals && my_threads))
-			perror("Init threads/malloc");
-
-		pthread_can_vcore_request(FALSE);	/* 2LS won't manage vcores */
-		pthread_need_tls(FALSE);
-		pthread_lib_init();					/* gives us one vcore */
-		vcore_request(nr_threads - 1);		/* ghetto incremental interface */
-		for (int i = 0; i < nr_threads; i++) {
-			x = __procinfo.vcoremap;
-			printf("%p\n", __procinfo.vcoremap);
-			printf("Vcore %d mapped to pcore %d\n", i,
-			    	__procinfo.vcoremap[i].pcoreid);
-		}
-	}
-
-	if (mcp) {
-		if (pthread_create(&my_threads[0], NULL, &talk_thread, NULL))
-			perror("pth_create failed");
-//		if (pthread_create(&my_threads[1], NULL, &fail, NULL))
-//			perror("pth_create failed");
-	}
-	printf("threads started\n");
-
-	if (0) for (int i = 0; i < nr_threads-1; i++) {
-		int ret;
-		if (pthread_join(my_threads[i], &my_retvals[i]))
-			perror("pth_join failed");
-		printf("%d %d\n", i, ret);
-	}
-	
 
 	ret = syscall(33, 1);
 	if (ret < 0) {
@@ -145,9 +89,18 @@ int main(int argc, char **argv)
 	}
 	sprintf(cmd, "V 0 0 0");
 	while (V(&shared, int) < 31) {
+		printf("RESUME?\n");
+		if (V(&shared, int) & 1) {
+			printf("shared %d\n", V(&shared, int) );
+		}
+		getchar();
 		ret = write(fd, cmd, strlen(cmd));
 		if (ret != strlen(cmd)) {
 			perror(cmd);
+		}
+		if (V(&shared, int) & 1) {
+			printf("shared %d\n", V(&shared, int) );
+			V(&shared, int) = V(&shared, int) + 1;
 		}
 	}
 	printf("shared is %d, blob is %d\n", shared, *mmap_blob);

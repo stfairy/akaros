@@ -36,6 +36,7 @@ struct virtqueue *guesttocons;
 	struct scatterlist out[] = { {NULL, sizeof(outline)}, };
 	struct scatterlist in[] = { {NULL, sizeof(line)}, };
 	int iter = 1;
+volatile int done = 0;
 
 
 
@@ -72,6 +73,7 @@ static void *fail(void *arg)
 		}
 	}
 
+	done = 1;
 	__asm__ __volatile__("vmcall");
 	__asm__ __volatile__("mov $0xdeadbeef, %rbx; mov 5, %rax\n");
 }
@@ -101,10 +103,12 @@ void *talk_thread(void *arg)
 		for (i = outlen; i < outlen + inlen; i++) {
 			/* host: read a line. */
 			memset(consline, 0, 128);
-			if (0) {
+			if (1) {
+				printf("GET A LINE\n");
 				if (fgets(consline, sizeof(consline), stdin) == NULL) {
 					exit(0);
 				} 
+				printf("GOT A LINE\n");
 			} else {
 				sprintf(consline, "hi there. %d\n", i);
 			}
@@ -222,6 +226,15 @@ fprintf(stderr, "stack %p\n", stack);
 	if (ret != strlen(cmd)) {
 		perror(cmd);
 	}
+	sprintf(cmd, "V 0 0 0");
+	while (! done) {
+		printf("RESUME\n");
+		ret = write(fd, cmd, strlen(cmd));
+		if (ret != strlen(cmd)) {
+			perror(cmd);
+		}
+	}
+
 	fprintf(stderr, "shared is %d\n", shared);
 
 	for (int i = 0; i < nr_threads - 1; i++) {
