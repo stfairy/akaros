@@ -20,7 +20,7 @@ int mcp = 1;
 #define V(x, t) (*((volatile t*)(x)))
 // NOTE: p is both our virtual and guest physical.
 void *p;
-
+int debug = 0;
 struct virtqueue *head, *consin, *consout;
 pthread_t *my_threads;
 void **my_retvals;
@@ -89,8 +89,9 @@ void *talk_thread(void *arg)
 	for(num = 0; num < 8;) {
 		/* host: use any buffers we should have been sent. */
 		head = wait_for_vq_desc(guesttocons, iov, &outlen, &inlen);
+		if (debug)
 		printf("vq desc head %d, gaveit %d gotitback %d\n", head, gaveit, gotitback);
-		for(i = 0; i < outlen + inlen; i++)
+		for(i = 0; debug && i < outlen + inlen; i++)
 			printf("v[%d/%d] v %p len %d\n", i, outlen + inlen, iov[i].v, iov[i].length);
 		/* host: if we got an output buffer, just output it. */
 		for(i = 0; i < outlen; i++) {
@@ -98,17 +99,16 @@ void *talk_thread(void *arg)
 			printf("Host:%s:\n", (char *)iov[i].v);
 		}
 		
-		printf("outlen is %d; inlen is %d\n", outlen, inlen);
+		if (debug) printf("outlen is %d; inlen is %d\n", outlen, inlen);
 		/* host: fill in the writeable buffers. */
 		for (i = outlen; i < outlen + inlen; i++) {
 			/* host: read a line. */
 			memset(consline, 0, 128);
 			if (1) {
-				printf("GET A LINE\n");
-				if (fgets(consline, sizeof(consline), stdin) == NULL) {
+				if (fgets(consline, 4096-256, stdin) == NULL) {
 					exit(0);
 				} 
-				printf("GOT A LINE\n");
+				if (debug) printf("GOT A LINE:%s:\n", consline);
 			} else {
 				sprintf(consline, "hi there. %d\n", i);
 			}
@@ -129,6 +129,7 @@ int main(int argc, char **argv)
 	int fd = open("#c/sysctl", O_RDWR), ret;
 	void * x;
 	static char cmd[512];
+	debug = argc > 1;
 	if (fd < 0) {
 		perror("#c/sysctl");
 		exit(1);
@@ -159,14 +160,12 @@ int main(int argc, char **argv)
 	outline = outpages + 128;
 	consline = outpages + 256;
 	outpages += 4096;
-fprintf(stderr, "outpages %p\n", outpages);
 	stack = mmap((int*)4096, 8192, PROT_READ | PROT_WRITE,
 	                 MAP_ANONYMOUS, -1, 0);
 	if (stack == MAP_FAILED) {
 		perror("Unable to mmap");
 		exit(1);
 	}
-fprintf(stderr, "stack %p\n", stack);
 
 	my_threads = calloc(sizeof(pthread_t) , nr_threads);
 	my_retvals = calloc(sizeof(void *) , nr_threads);
@@ -221,21 +220,24 @@ fprintf(stderr, "stack %p\n", stack);
 	showscatterlist(out, 1);
 	showvq(guesttocons);
 	//showdesc(guesttocons, 0);
-	fprintf(stderr, "Writing command :%s:\n", cmd);
+	if (debug)
+		fprintf(stderr, "Writing command :%s:\n", cmd);
 	ret = write(fd, cmd, strlen(cmd));
 	if (ret != strlen(cmd)) {
 		perror(cmd);
 	}
 	sprintf(cmd, "V 0 0 0");
 	while (! done) {
-		printf("RESUME\n");
+		if (debug)
+			fprintf(stderr, "RESUME\n");
 		ret = write(fd, cmd, strlen(cmd));
 		if (ret != strlen(cmd)) {
 			perror(cmd);
 		}
 	}
 
-	fprintf(stderr, "shared is %d\n", shared);
+	if (debug)
+		fprintf(stderr, "shared is %d\n", shared);
 
 	for (int i = 0; i < nr_threads - 1; i++) {
 		int ret;
