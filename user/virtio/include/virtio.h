@@ -120,5 +120,6 @@ void *virtqueue_detach_unused_buf(struct virtqueue *vq);
 unsigned int virtqueue_get_vring_size(struct virtqueue *vq);
 
 bool virtqueue_is_broken(struct virtqueue *vq);
+void virtqueue_close(struct virtqueue *vq);
 
 #endif /* _USER_VIRTIO_H */

@@ -795,7 +795,7 @@ void showvq(struct virtqueue *_vq)
 	struct vring_used *u = vq->vring.used;
 
 //	int i;
-	fprintf(stderr, "vq %p, desc %p, avail %p, used %p\n", vq, desc, a, u);
+	fprintf(stderr, "vq %p, desc %p, avail %p, used %p broken %d\n", vq, desc, a, u, vq->broken);
 	fprintf(stderr, "vq; %s, index 0x%x, num_free 0x%x, priv %p\n", vq->vq.name, vq->vq.index, vq->vq.num_free, vq->vq.priv);
 	fprintf(stderr, "avail: flags 0x%x idx 0x%x\n", a->flags, a->idx);
 	fprintf(stderr, "used: flags 0x%x idx 0x%x \n", u->flags, u->idx);
@@ -967,9 +967,13 @@ unsigned int wait_for_vq_desc(struct virtqueue *_vq,
 	struct vring_desc *desc;
 	uint16_t last_avail = lg_last_avail(vq);
 
+	*out_num = *in_num = 0;
 	/* There's nothing available? */
 	while (last_avail == vq->vring.avail->idx) {
 		//uint64_t event;
+		if (virtqueue_is_broken(_vq)) {
+			return 0;
+		}
 
 		/*
 		 * Since we're about to sleep, now is a good time to tell the
@@ -1103,4 +1107,10 @@ void showscatterlist(struct scatterlist *sg, int num)
 	for(i = 0; i < num; i++)
 		fprintf(stderr, "[%p, 0x%x],", sg[i].v, sg[i].length);
 	fprintf(stderr, "]\n");
+}
+
+void virtqueue_close(struct virtqueue *_vq)
+{
+	struct vring_virtqueue *vq = to_vvq(_vq);
+	vq->broken = true;
 }
