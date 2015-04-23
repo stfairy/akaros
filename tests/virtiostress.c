@@ -43,6 +43,8 @@ volatile int done = 0;
 volatile int cnt;
 volatile int failed, done, added, badput, badget, bogus;
 volatile struct page *usedhead;
+volatile int fstate;
+volatile int failiter;
 
 #define MAX_U16_POOL_SZ (1 << 16)
 
@@ -132,29 +134,38 @@ static void *fail(void *arg)
 
 	int i, j, v, ret;
 
-	for(i = 0; i < 8;) {
+	for(i = 0; i < 1024;) {
 		/* get all the free ones you can, and add them all */
+		fstate = 1;
 		for(cnt = 0, v = get_u16(id); v >= 0; v = get_u16(id), cnt++) {
+			failiter++;
 			added++;
 			/* 1:1 mapping of iovs to data pages for now */
-			io[v].v = &datapages[v];
+			io[cnt].v = &datapages[v];
 		}
 
-		if (virtqueue_add_inbuf_avail(guesttocons, io, cnt, datapages, 0)) 
+		fstate++;
+		if (! cnt)
+			continue;
+		if (virtqueue_add_inbuf_avail(guesttocons, io, cnt, datapages, 0)) {
 			failed = 1;
 			break;
 		}
+		fstate++;
 
 		while (cnt > 0) {
 			if ((usedhead = virtqueue_get_buf_used(guesttocons, &conslen))) {
 				if (usedhead != datapages) { failed = 1; goto fuck;}
-				for(j = 0; j < cnt; j++) {
-					int idx = (struct page *)io[v].v - usedhead;
+				for(j = 0; j < conslen; j++) {		
+					int idx = (struct page *)io[j].v - usedhead;
 					put_u16(id, idx);
 					cnt--;
 				}
 			} else bogus++;
 		}
+		i++;
+		fstate++;
+	}
 
 	done = 1;
 fuck:
@@ -169,6 +180,7 @@ void *talk_thread(void *arg)
 	uint16_t head;
 	int i;
 	int num;
+	int tot = 0;
 	for(;;) {
 		/* host: use any buffers we should have been sent. */
 		head = wait_for_vq_desc(guesttocons, iov, &outlen, &inlen);
@@ -176,16 +188,21 @@ void *talk_thread(void *arg)
 			printf("vq desc head %d\n", head);
 		if ((outlen == 0) && (inlen == 0)) // EOF
 			break;
+		tot += outlen + inlen;
 		for(i = 0; debug && i < outlen + inlen; i++)
 			printf("v[%d/%d] v %p len %d\n", i, outlen + inlen, iov[i].v, iov[i].length);
 
 		if (debug) printf("outlen is %d; inlen is %d\n", outlen, inlen);
+		if (0)
 		{ printf("BEFORE ADD USED cnt %d conslen %d badget %d badput %d usedhead %p bogus %d\n", cnt, conslen, badget, badput, usedhead, bogus); showvq(guesttocons); getchar();}
 		/* host: now ack that we used them all. */
 		add_used(guesttocons, head, outlen+inlen);
-		/*while (cnt)*/ { printf("cnt %d conslen %d badget %d badput %d usedhead %p bogus %d\n", cnt, conslen, badget, badput, usedhead, bogus); showvq(guesttocons); getchar();} 
+		if (0)
+		{ printf("cnt %d conslen %d badget %d badput %d usedhead %p bogus %d\n", cnt, conslen, badget, badput, usedhead, bogus); showvq(guesttocons); getchar();} 
+		if (debug)
+			printf("LOOP fstate %d \n", fstate);
 	}
-	fprintf(stderr, "All done\n");
+	fprintf(stderr, "All done, tot %d, failed %d, failiter %d\n", tot, failed, failiter);
 	return NULL;
 }
 
