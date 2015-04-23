@@ -31,7 +31,7 @@ pthread_t *my_threads;
 void **my_retvals;
 int nr_threads = 2;
 	char *line, *consline, *outline;
-	struct scatterlist iov[32];
+	struct scatterlist iov[512];
 	unsigned int inlen, outlen, conslen;
 	/* unlike Linux, this shared struct is for both host and guest. */
 //	struct virtqueue *constoguest = 
@@ -134,7 +134,7 @@ static void *fail(void *arg)
 
 	int i, j, v, ret;
 
-	for(i = 0; i < 1024;) {
+	for(i = 0; i < 4096;) {
 		/* get all the free ones you can, and add them all */
 		fstate = 1;
 		for(cnt = 0, v = get_u16(id); v >= 0; v = get_u16(id), cnt++) {
@@ -262,7 +262,7 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Vcore %d mapped to pcore %d\n", i,
 			   __procinfo.vcoremap[i].pcoreid);
 	}
-	id = create_u16_pool(1); //1<<16);
+	id = create_u16_pool(512); //1<<16);
 
 	guesttocons = vring_new_virtqueue(0, 512, 8192, 0, ringpages, NULL, NULL, "test");
 	fprintf(stderr, "guesttocons is %p\n", guesttocons);
