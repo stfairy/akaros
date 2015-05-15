@@ -155,7 +155,7 @@ static void *fail(void *arg)
 
 		while (cnt > 0) {
 			if ((usedhead = virtqueue_get_buf_used(guesttocons, &conslen))) {
-				if (usedhead != datapages) { failed = 1; goto fuck;}
+				if (usedhead != datapages) { failed = 1; goto verybad;}
 				for(j = 0; j < conslen; j++) {		
 					int idx = (struct page *)io[j].v - usedhead;
 					put_u16(id, idx);
@@ -168,7 +168,7 @@ static void *fail(void *arg)
 	}
 
 	done = 1;
-fuck:
+verybad:
 	__asm__ __volatile__("vmcall");
 }
 
