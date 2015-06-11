@@ -75,7 +75,7 @@ int nr_threads = 2;
 
 int main(int argc, char **argv)
 {
-	int i;
+	int i, amt;
 	int nr_gpcs = 1;
 	uint64_t entry;
 	int fd = open("#c/sysctl", O_RDWR), ret;
@@ -96,41 +96,16 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Usage: %s [-s] vmimage entrypoint\n", argv[0]);
 		exit(1);
 	}
-	entry = strtoull(argv[2], 0, 0);
-	kfd = open(argv[1], O_RDONLY);
+	entry = strtoull(argv[1], 0, 0);
+	kfd = open(argv[0], O_RDONLY);
 	if (kfd < 0) {
-		perror(argv[1]);
+		perror(argv[0]);
 		exit(1);
 	}
 	if (ros_syscall(SYS_setup_vmm, nr_gpcs, 0, 0, 0, 0, 0) != nr_gpcs) {
 		perror("Guest pcore setup failed");
 		exit(1);
 	}
-	/* blob that is faulted in from the EPT first.  we need this to be in low
-	 * memory (not above the normal mmap_break), so the EPT can look it up.
-	 * Note that we won't get 4096.  The min is 1MB now, and ld is there. */
-	/* just get 128MiB for now.
-	mmap_blob = mmap((int*)4096, 128 * 1048576, PROT_READ | PROT_WRITE,
-	                 MAP_ANONYMOUS, -1, 0);
-	if (mmap_blob == MAP_FAILED) {
-		perror("Unable to mmap");
-		exit(1);
-	}
-
-	// read in the kernel.
-	x = mmap_blob;
-	for(;;) {
-		amt = read(kfd, x, 1048576);
-		if (amt < 0) {
-			perror("read");
-			exit(1);
-		}
-		if (amt == 0) {
-			break;
-		}
-		x += amt;
-	}
-
 		my_threads = malloc(sizeof(pthread_t) * nr_threads);
 		my_retvals = malloc(sizeof(void*) * nr_threads);
 		if (!(my_retvals && my_threads))
@@ -165,6 +140,32 @@ int main(int argc, char **argv)
 		perror("vm setup");
 		exit(1);
 	}
+	/* blob that is faulted in from the EPT first.  we need this to be in low
+	 * memory (not above the normal mmap_break), so the EPT can look it up.
+	 * Note that we won't get 4096.  The min is 1MB now, and ld is there. */
+
+	mmap_blob = mmap((int*)(16*1048576), 16 * 1048576, PROT_READ | PROT_WRITE,
+	                 MAP_ANONYMOUS, -1, 0);
+	if (mmap_blob == MAP_FAILED) {
+		perror("Unable to mmap");
+		exit(1);
+	}
+
+	// read in the kernel.
+	x = mmap_blob + 64*1024;
+	for(;;) {
+		amt = read(kfd, x, 1048576);
+		if (amt < 0) {
+			perror("read");
+			exit(1);
+		}
+		if (amt == 0) {
+			break;
+		}
+		x += amt;
+	}
+	fprintf(stderr, "Read in %d bytes\n", x-mmap_blob);
+
 	p512 = mmap_blob;
 	p1 = &p512[512];
 	p2m = &p512[1024];
@@ -172,12 +173,14 @@ int main(int argc, char **argv)
 	// we have no access to. Further, since the PML2 is the same in all cases,
 	// two PML3s can point to it.
 	// Just assume we get the maximum, and build your kernels accordingly.
-#define KERNBASElow 0xffffffff80000000
-#define KERNBASEhigh 0xffffffffc0000000
-#define KERNBASEsmall 0xfffffffff0000000
+#define KERNBASElow 0xffffffff80000000ULL
+#define KERNBASEhigh 0xffffffffc0000000ULL
+#define KERNBASEsmall 0xfffffffff0000000ULL
 #define _2MiB 0x200000
 	if (smallkernel) {
+		printf("PML4 x is 0x%x\n", PML4(KERNBASEsmall));
 		p512[PML4(KERNBASEsmall)] = (unsigned long long)p1 | 7;
+		printf("PML3 x is 0x%x\n", PML3(KERNBASEsmall));
 		p1[PML3(KERNBASEsmall)] = /*0x87; */(unsigned long long)p2m | 7;
 		// to make it easy, we add KERNBASE to entry for you. Less typing.
 		entry += KERNBASEsmall;
@@ -189,10 +192,10 @@ int main(int argc, char **argv)
 		entry += KERNBASElow;
 	}
 	for(i = 0; i < 512; i++)
-		p2m[PML2(KERNBASElow) + i * _2MiB] = 0x87 | _2MiB;
+		p2m[PML2(KERNBASElow + i * _2MiB)] = 0x87 | _2MiB;
 			
 	printf("p512 %p p512[0] is 0x%lx p1 %p p1[0] is 0x%x\n", p512, p512[0], p1, p1[0]);
-	sprintf(cmd, "V 0x%x 0x%x 0x%x", entry, (unsigned long long) &stack[1024], (unsigned long long) p512);
+	sprintf(cmd, "V 0x%llx 0x%llx 0x%llx", entry, (unsigned long long) &stack[1024], (unsigned long long) p512);
 	printf("Writing command :%s:\n", cmd);
 	ret = write(fd, cmd, strlen(cmd));
 	if (ret != strlen(cmd)) {
@@ -201,6 +204,8 @@ int main(int argc, char **argv)
 
 	sprintf(cmd, "V 0 0 0");
 	while (! done) {
+		char c[1];
+		printf("hit return\n"); read(0, c, 1);
 		if (debug)
 			fprintf(stderr, "RESUME\n");
 		ret = write(fd, cmd, strlen(cmd));
