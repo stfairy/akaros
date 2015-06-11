@@ -1316,7 +1316,7 @@ static int vmx_handle_ept_violation(struct vmx_vcpu *vcpu)
 	ret = handle_page_fault(current, gpa, prot);
 
 	if (ret) {
-		printk("EPT page fault failure GPA: %p, GVA: %p\n", gpa, gva);
+		printk("EPT page fault failure %d, GPA: %p, GVA: %p\n", ret, gpa, gva);
 		vmx_dump_cpu(vcpu);
 	}
 

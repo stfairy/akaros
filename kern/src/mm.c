@@ -1,3 +1,4 @@
+#define DEBUG
 /* Copyright (c) 2009, 2010 The Regents of the University of California
  * Barret Rhoden <brho@cs.berkeley.edu>
  * See LICENSE for details.
@@ -935,6 +936,7 @@ refault:
 	/* Check the vmr's protection */
 	vmr = find_vmr(p, va);
 	if (!vmr) {							/* not mapped at all */
+		printd("fault: %p not mapped\n", va);
 		ret = -EFAULT;
 		goto out;
 	}
@@ -1005,6 +1007,9 @@ refault:
 	int pte_prot = (vmr->vm_prot & PROT_WRITE) ? PTE_USER_RW :
 	               (vmr->vm_prot & (PROT_READ|PROT_EXEC)) ? PTE_USER_RO : 0;
 	ret = map_page_at_addr(p, a_page, va, pte_prot);
+	if (ret) {
+		printd("map_page_at for %p fails with %d\n", va, ret);
+	}
 	/* fall through, even for errors */
 out_put_pg:
 	/* the VMR's existence in the PM (via the mmap) allows us to have PTE point

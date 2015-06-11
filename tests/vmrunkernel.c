@@ -33,7 +33,7 @@
 
 /* PMLx(la, shift) gives the 9 bits specifying the la's entry in the PML
  * corresponding to shift.  PMLn(la) gives the 9 bits for PML4, etc. */
-#define PMLx(la, shift)	(((uintptr_t)(la) >> (shift)) & 0x1ff)
+#define PMLx(la, shift)	(((uintptr_t)(la) >> (shift+3)) & 0x3f)
 #define PML4(la) 		PMLx(la, PML4_SHIFT)
 #define PML3(la) 		PMLx(la, PML3_SHIFT)
 #define PML2(la) 		PMLx(la, PML2_SHIFT)
