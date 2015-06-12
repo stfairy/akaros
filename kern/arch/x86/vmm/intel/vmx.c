@@ -1,3 +1,4 @@
+#define DEBUG 1
 /**
  *  vmx.c - The Intel VT-x driver for Dune
  *
@@ -1310,9 +1311,15 @@ static int vmx_handle_ept_violation(struct vmx_vcpu *vcpu)
 	vmx_put_cpu(vcpu);
 
 	int prot = 0;
+	/* There appear to be multiple bits set on the fault. I don't know why.
+	 * For now, take the "highest" one.
 	prot |= exit_qual & VMX_EPT_FAULT_READ ? PROT_READ : 0;
 	prot |= exit_qual & VMX_EPT_FAULT_WRITE ? PROT_WRITE : 0;
 	prot |= exit_qual & VMX_EPT_FAULT_INS ? PROT_EXEC : 0;
+	*/
+	prot = exit_qual & VMX_EPT_FAULT_INS ? PROT_EXEC : prot;
+	prot = exit_qual & VMX_EPT_FAULT_READ ? PROT_READ : prot;
+	prot = exit_qual & VMX_EPT_FAULT_WRITE ? PROT_WRITE : prot;
 	ret = handle_page_fault(current, gpa, prot);
 
 	if (ret) {
