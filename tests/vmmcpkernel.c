@@ -127,17 +127,20 @@ int main(int argc, char **argv)
 	}
 	p1 = &p512[512];
 	p2m = &p512[1024];
-	p512[0x1ff] = (unsigned long long)p1 | 7;
-	p1[0x1fe] = /*0x87; */(unsigned long long)p2m | 7;
-	p2m[0] = 0x87;
-	p2m[1] = 0x200000 | 0x87;
-	p2m[2] = 0x400000 | 0x87;
-	p2m[3] = 0x600000 | 0x87;
-
 	uint64_t kernbase = 0xffffffff80000000;
-	// Just test highest bits. */
-	kernbase >>= (18+12);
-	kernbase <<= (18 + 12);
+	p512[PML4(kernbase)] = (unsigned long long)p1 | 7;
+	p1[PML3(kernbase)] = /*0x87; */(unsigned long long)p2m | 7;
+#define _2MiB (0x200000)
+	int i;
+	for (i = 0; i < 512; i++) {
+		p2m[PML2(kernbase + i * _2MiB)] = 0x87 | i * _2MiB;
+	}
+	//p2m[PML2(kernbase + 0x200000)] = 0x200000 | 0x87;
+	//p2m[PML2(kernbase + 0x400000)] = 0x400000 | 0x87;
+	//p2m[PML2(kernbase + 0x600000)] = 0x600000 | 0x87;
+
+	kernbase >>= (0+12);
+	kernbase <<= (0 + 12);
 	uint64_t entry = kernbase + (uint64_t) fail;
 	printf("kernbase for pml4 is 0x%llx and entry is %llx\n", kernbase, entry);
 	printf("p512 %p p512[0] is 0x%lx p1 %p p1[0] is 0x%x\n", p512, p512[0], p1, p1[0]);
