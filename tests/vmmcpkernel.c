@@ -19,6 +19,8 @@ volatile int shared = 0;
 int mcp = 1;
 #define V(x, t) (*((volatile t*)(x)))
 
+uint8_t _kernel[64*1048576];
+
 static void *fail(void*arg)
 {
 
@@ -62,6 +64,13 @@ int main(int argc, char **argv)
 	int fd = open("#c/sysctl", O_RDWR), ret;
 	void * x;
 	static char cmd[512];
+	/* kernel has to be in the range 16M to 64M for now. */
+	// mmap is not working for us at present.
+	if ((uint64_t)_kernel > 16*1048576) {
+		printf("kernel array is above 16M, sucks\n");
+		exit(1);
+	}
+
 	if (fd < 0) {
 		perror("#c/sysctl");
 		exit(1);
@@ -121,13 +130,14 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 	ret = posix_memalign((void **)&p512, 4096, 3*4096);
+	printf("memalign is %p\n", p512);
 	if (ret) {
 		perror("ptp alloc");
 		exit(1);
 	}
 	p1 = &p512[512];
 	p2m = &p512[1024];
-	uint64_t kernbase = 0xffffffff80000000;
+	uint64_t kernbase = 0; //0xffffffff80000000;
 	p512[PML4(kernbase)] = (unsigned long long)p1 | 7;
 	p1[PML3(kernbase)] = /*0x87; */(unsigned long long)p2m | 7;
 #define _2MiB (0x200000)
@@ -135,13 +145,14 @@ int main(int argc, char **argv)
 	for (i = 0; i < 512; i++) {
 		p2m[PML2(kernbase + i * _2MiB)] = 0x87 | i * _2MiB;
 	}
-	//p2m[PML2(kernbase + 0x200000)] = 0x200000 | 0x87;
-	//p2m[PML2(kernbase + 0x400000)] = 0x400000 | 0x87;
-	//p2m[PML2(kernbase + 0x600000)] = 0x600000 | 0x87;
 
 	kernbase >>= (0+12);
 	kernbase <<= (0 + 12);
 	uint64_t entry = kernbase + (uint64_t) fail;
+	uint8_t *kernel = (void *)(16*1048576);
+	uint8_t program[] = {0x0f, 0x1, 0xc1, 0xeb, 0xfe};
+	memmove(kernel, program, sizeof(program));
+	entry = (uint64_t)kernel;
 	printf("kernbase for pml4 is 0x%llx and entry is %llx\n", kernbase, entry);
 	printf("p512 %p p512[0] is 0x%lx p1 %p p1[0] is 0x%x\n", p512, p512[0], p1, p1[0]);
 	sprintf(cmd, "V 0x%llx 0x%llx 0x%llx", entry, (unsigned long long) &stack[1024], (unsigned long long) p512);
@@ -151,6 +162,8 @@ int main(int argc, char **argv)
 		perror(cmd);
 	}
 	printf("shared is %d, blob is %d\n", shared, *mmap_blob);
+	printf("Hit return to end, ...\n");
+	read(0, p512, 1);
 
 	return 0;
 }
