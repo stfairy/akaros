@@ -735,7 +735,7 @@ int __do_mprotect(struct proc *p, uintptr_t addr, size_t len, int prot)
 		 * prot.  The others will fault on access, and we'll change the PTE
 		 * then.  In the off chance we have a mapped but not present PTE, we
 		 * might as well change it too, since we're already here. */
-		for (uintptr_t va = vmr->vm_base; va < vmr->vm_end; va += PGSIZE) { 
+		for (uintptr_t va = vmr->vm_base; va < vmr->vm_end; va += PGSIZE) {
 			pte = pgdir_walk(p->env_pgdir, (void*)va, 0);
 			if (pte_walk_okay(pte) && pte_is_mapped(pte)) {
 				pte_replace_perm(pte, pte_prot);
@@ -911,7 +911,7 @@ static int __hpf_load_page(struct proc *p, struct page_map *pm,
 	return 0;
 }
 
-/* Returns 0 on success, or an appropriate -error code. 
+/* Returns 0 on success, or an appropriate -error code.
  *
  * Notes: if your TLB caches negative results, you'll need to flush the
  * appropriate tlb entry.  Also, you could have a weird race where a present PTE
@@ -928,8 +928,11 @@ int handle_page_fault(struct proc *p, uintptr_t va, int prot)
 	bool first = TRUE;
 	va = ROUNDDOWN(va,PGSIZE);
 
-	if (prot != PROT_READ && prot != PROT_WRITE && prot != PROT_EXEC)
+	if (prot != PROT_READ && prot != PROT_WRITE && prot != PROT_EXEC){
+		printk("va %p, prot 0x%x: not one of %x, %x, or %x\n",
+			va, prot, PROT_READ, PROT_WRITE, PROT_EXEC);
 		panic("bad prot!");
+	}
 refault:
 	/* read access to the VMRs TODO: RCU */
 	spin_lock(&p->vmr_lock);
