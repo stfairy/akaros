@@ -20,6 +20,8 @@
 #ifndef ROS_KERN_TASKQUEUE_H
 #define ROS_KERN_TASKQUEUE_H
 
+#include <common.h>
+
 typedef void (*task_fn_t)(void *context, int pending);
 struct taskqueue {};
 struct task {
